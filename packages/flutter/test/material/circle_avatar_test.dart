@@ -32,7 +32,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(backgroundColor));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -54,7 +54,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(backgroundColor));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -74,7 +74,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.image!.fit, equals(BoxFit.cover));
   });
 
@@ -91,7 +91,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.image!.fit, equals(BoxFit.cover));
   });
 
@@ -115,7 +115,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.image!.fit, equals(BoxFit.cover));
     await expectLater(
       find.byType(CircleAvatar),
@@ -139,7 +139,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(40.0, 40.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(fallback.primaryColorDark));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -161,7 +161,7 @@ void main() {
 
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(theme.colorScheme.primaryContainer));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -229,7 +229,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(backgroundColor));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -251,7 +251,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(backgroundColor));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -274,7 +274,7 @@ void main() {
     final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
     expect(box.size, equals(const Size(100.0, 100.0)));
     final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-    final BoxDecoration decoration = child.decoration as BoxDecoration;
+    final ShapeDecoration decoration = child.decoration as ShapeDecoration;
     expect(decoration.color, equals(backgroundColor));
 
     final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -301,7 +301,7 @@ void main() {
 
       final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
       final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-      final BoxDecoration decoration = child.decoration as BoxDecoration;
+      final ShapeDecoration decoration = child.decoration as ShapeDecoration;
       expect(decoration.color, equals(theme.primaryColorLight));
 
       final RenderParagraph paragraph = tester.renderObject(find.text('Z'));
@@ -323,7 +323,7 @@ void main() {
 
       final RenderConstrainedBox box = tester.renderObject(find.byType(CircleAvatar));
       final RenderDecoratedBox child = box.child! as RenderDecoratedBox;
-      final BoxDecoration decoration = child.decoration as BoxDecoration;
+      final ShapeDecoration decoration = child.decoration as ShapeDecoration;
       expect(decoration.color, equals(theme.primaryColorDark));
 
       final RenderParagraph paragraph = tester.renderObject(find.text('Z'));

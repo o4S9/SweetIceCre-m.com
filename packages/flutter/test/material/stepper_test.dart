@@ -1199,7 +1199,7 @@ testWidgetsWithLeakTracking('Stepper custom indexed controls test', (WidgetTeste
 
     Color? circleFillColor() {
       final Finder container = find.widgetWithText(AnimatedContainer, '1');
-      return (tester.widget<AnimatedContainer>(container).decoration as BoxDecoration?)?.color;
+      return (tester.widget<AnimatedContainer>(container).decoration as ShapeDecoration?)?.color;
     }
 
     // Light theme
@@ -1519,7 +1519,7 @@ testWidgetsWithLeakTracking('Stepper custom indexed controls test', (WidgetTeste
 
     Color? circleColor(String circleText) => (tester.widget<AnimatedContainer>(
       find.widgetWithText(AnimatedContainer, circleText),
-    ).decoration as BoxDecoration?)?.color;
+    ).decoration as ShapeDecoration?)?.color;
 
     Color? lineColor(String keyStep) => tester.widget<Container>(find.byKey(Key(keyStep))).color;
 
