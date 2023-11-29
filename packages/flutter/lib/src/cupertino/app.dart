@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'button.dart';
@@ -609,24 +610,28 @@ class _CupertinoAppState extends State<CupertinoApp> {
   @override
   Widget build(BuildContext context) {
     final CupertinoThemeData effectiveThemeData = (widget.theme ?? const CupertinoThemeData()).resolveFrom(context);
+    final ThemeData materialThemeData = effectiveThemeData.brightness == Brightness.dark ? ThemeData.dark(useMaterial3: false) : ThemeData.light(useMaterial3: false);
 
     return ScrollConfiguration(
       behavior: widget.scrollBehavior ?? const CupertinoScrollBehavior(),
       child: CupertinoUserInterfaceLevel(
         data: CupertinoUserInterfaceLevelData.base,
-        child: CupertinoTheme(
-          data: effectiveThemeData,
-          child: DefaultSelectionStyle(
-            selectionColor: effectiveThemeData.primaryColor.withOpacity(0.2),
-            cursorColor: effectiveThemeData.primaryColor,
-            child: HeroControllerScope(
-              controller: _heroController,
-              child: Builder(
-                builder: _buildWidgetApp,
+        child: Theme(
+          data: materialThemeData,
+          child: CupertinoTheme(
+            data: effectiveThemeData,
+            child: DefaultSelectionStyle(
+              selectionColor: effectiveThemeData.primaryColor.withOpacity(0.2),
+              cursorColor: effectiveThemeData.primaryColor,
+              child: HeroControllerScope(
+                controller: _heroController,
+                child: Builder(
+                  builder: _buildWidgetApp,
+                ),
               ),
             ),
           ),
-        ),
+        )
       ),
     );
   }
