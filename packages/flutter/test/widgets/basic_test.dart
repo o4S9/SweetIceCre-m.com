@@ -859,6 +859,7 @@ void main() {
         tester.getSemantics(find.byKey(key)),
         matchesSemantics(
           label: 'button',
+          hasDidGainAccessibilityFocusAction: true,
           hasTapAction: true,
           isButton: true,
           isFocusable: true,
@@ -1025,6 +1026,7 @@ void main() {
         matchesSemantics(
           label: 'button',
           isButton: true,
+          hasDidGainAccessibilityFocusAction: true,
           isFocusable: true,
           hasEnabledState: true,
           isEnabled: true,
