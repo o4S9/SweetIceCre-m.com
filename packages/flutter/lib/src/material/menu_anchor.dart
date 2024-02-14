@@ -3489,16 +3489,11 @@ class _MenuPanelState extends State<_MenuPanel> {
     );
 
     if (widget.crossAxisUnconstrained) {
-      menuPanel = SizeTransition(
-        sizeFactor: widget.menuAnimation!,
-        axisAlignment: -1,
-        fixedCrossAxisSizeFactor: 1,
-        child: UnconstrainedBox(
-          constrainedAxis: widget.orientation,
-          clipBehavior: Clip.hardEdge,
-          alignment: AlignmentDirectional.centerStart,
-          child: menuPanel,
-        ),
+      menuPanel = UnconstrainedBox(
+        constrainedAxis: widget.orientation,
+        clipBehavior: Clip.hardEdge,
+        alignment: AlignmentDirectional.centerStart,
+        child: menuPanel,
       );
     }
 
