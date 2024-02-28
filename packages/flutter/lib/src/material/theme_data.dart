@@ -2287,6 +2287,10 @@ class MaterialBasedCupertinoThemeData extends CupertinoThemeData {
   }
 }
 
+class CupertinoBasedMaterialThemeData extends ThemeData {
+
+}
+
 @immutable
 class _IdentityThemeDataCacheKey {
   const _IdentityThemeDataCacheKey(this.baseTheme, this.localTextGeometry);
