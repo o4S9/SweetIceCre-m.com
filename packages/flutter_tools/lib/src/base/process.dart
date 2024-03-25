@@ -139,6 +139,9 @@ abstract class ProcessUtils {
     required Logger logger,
   }) = _DefaultProcessUtils;
 
+  /// Returns `true` if the [executable] exists and if it can be executed.
+  bool canRun(Object executable, {String? workingDirectory});
+
   /// Spawns a child process to run the command [cmd].
   ///
   /// When [throwOnError] is `true`, if the child process finishes with a non-zero
@@ -188,12 +191,20 @@ abstract class ProcessUtils {
 
   /// This runs the command in the background from the specified working
   /// directory. Completes when the process has been started.
-  Future<Process> start(
+  Future<ProcessWithoutStdin> start(
     List<String> cmd, {
     String? workingDirectory,
     bool allowReentrantFlutter = false,
     Map<String, String>? environment,
-    ProcessStartMode mode = ProcessStartMode.normal,
+  });
+
+  // TODO document
+  Future<Process> startWithStdin(
+    List<String> cmd, {
+    String? workingDirectory,
+    bool allowReentrantFlutter = false,
+    Map<String, String>? environment,
+    void Function(Object, StackTrace)? stdinWriteErrorHandler,
   });
 
   /// This runs the command and streams stdout/stderr from the child process to
@@ -288,6 +299,12 @@ class _DefaultProcessUtils implements ProcessUtils {
   final Logger _logger;
 
   @override
+  bool canRun(Object executable, {String? workingDirectory}) => _processManager.canRun(
+    executable,
+    workingDirectory: workingDirectory,
+  );
+
+  @override
   Future<RunResult> run(
     List<String> cmd, {
     bool throwOnError = false,
@@ -329,11 +346,11 @@ class _DefaultProcessUtils implements ProcessUtils {
       assert(timeoutRetries >= 0);
       timeoutRetries = timeoutRetries - 1;
 
-      final Process process = await start(
-          cmd,
-          workingDirectory: workingDirectory,
-          allowReentrantFlutter: allowReentrantFlutter,
-          environment: environment,
+      final ProcessWithoutStdin process = await start(
+        cmd,
+        workingDirectory: workingDirectory,
+        allowReentrantFlutter: allowReentrantFlutter,
+        environment: environment,
       );
 
       final StringBuffer stdoutBuffer = StringBuffer();
@@ -460,20 +477,40 @@ class _DefaultProcessUtils implements ProcessUtils {
   }
 
   @override
-  Future<Process> start(
+  Future<ProcessWithoutStdin> start(
     List<String> cmd, {
     String? workingDirectory,
     bool allowReentrantFlutter = false,
     Map<String, String>? environment,
-    ProcessStartMode mode = ProcessStartMode.normal,
-  }) {
+  }) async {
     _traceCommand(cmd, workingDirectory: workingDirectory);
-    return _processManager.start(
+    final Process process = await _processManager.start(
       cmd,
       workingDirectory: workingDirectory,
       environment: _environment(allowReentrantFlutter, environment),
-      mode: mode,
     );
+    return ProcessWithoutStdin(process);
+  }
+
+  @override
+  Future<Process> startWithStdin(
+    List<String> cmd, {
+    String? workingDirectory,
+    bool allowReentrantFlutter = false,
+    Map<String, String>? environment,
+    void Function(Object, StackTrace)? stdinWriteErrorHandler,
+  }) async {
+    _traceCommand(cmd, workingDirectory: workingDirectory);
+    final Process process = await _processManager.start(
+      cmd,
+      workingDirectory: workingDirectory,
+      environment: _environment(allowReentrantFlutter, environment),
+    );
+    stdinWriteErrorHandler ??= (_, __) => throw UnimplementedError('TODO'); // TODO
+    unawaited(
+      process.stdin.done.then<void>((_) {}, onError: stdinWriteErrorHandler),
+    );
+    return process;
   }
 
   @override
@@ -488,7 +525,7 @@ class _DefaultProcessUtils implements ProcessUtils {
     StringConverter? mapFunction,
     Map<String, String>? environment,
   }) async {
-    final Process process = await start(
+    final ProcessWithoutStdin process = await start(
       cmd,
       workingDirectory: workingDirectory,
       allowReentrantFlutter: allowReentrantFlutter,
@@ -687,4 +724,15 @@ Future<int> exitWithHooks(int code, {required ShutdownHooks shutdownHooks}) asyn
 
   await completer.future;
   return code;
+}
+
+extension type ProcessWithoutStdin(Process process) {
+  Future<int> get exitCode => process.exitCode;
+
+  Stream<List<int>> get stdout => process.stdout;
+  Stream<List<int>> get stderr => process.stderr;
+
+  bool kill() => process.kill();
+
+  int get pid => process.pid;
 }
