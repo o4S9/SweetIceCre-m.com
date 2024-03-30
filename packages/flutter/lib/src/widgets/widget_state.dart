@@ -20,7 +20,17 @@ abstract class WidgetStateMatch with _WidgetStateOperators {
 
   /// A function used by [WidgetStateProperty.map] to check whether
   /// each key matches the current set of states.
-  bool match(Set<WidgetState> states);
+  bool call(Set<WidgetState> states);
+}
+
+/// A private class, used in [_WidgetStateOperators].
+class _WidgetStateOperation extends WidgetStateMatch {
+  const _WidgetStateOperation(this._call);
+
+  final bool Function(Set<WidgetState> states) _call;
+
+  @override
+  bool call(Set<WidgetState> states) => _call(states);
 }
 
 /// These operators can be used inside a [WidgetStateMap] to combine states
@@ -34,54 +44,18 @@ mixin _WidgetStateOperators {
   WidgetStateMatch get _this => this as WidgetStateMatch;
 
   /// Combines two [WidgetStateMatch] values using logical "and".
-  WidgetStateMatch operator &(WidgetStateMatch other) => _WidgetStateOperator.and(_this, other);
+  WidgetStateMatch operator &(WidgetStateMatch other) {
+    return _WidgetStateOperation((Set<WidgetState> states) => _this(states) && other(states));
+  }
 
   /// Combines two [WidgetStateMatch] values using logical "or".
-  WidgetStateMatch operator |(WidgetStateMatch other) => _WidgetStateOperator.or(_this, other);
+  WidgetStateMatch operator |(WidgetStateMatch other) {
+    return _WidgetStateOperation((Set<WidgetState> states) => _this(states) || other(states));
+  }
 
-  /// Combines two [WidgetStateMatch] values using logical "not".
-  WidgetStateMatch operator ~() => _WidgetStateOperator.not(_this);
-}
-
-class _WidgetStateOperator extends WidgetStateMatch {
-  /// Combines two [WidgetStateMatch] values using logical "and".
-  const _WidgetStateOperator.and(this.value, this.other) : operator = '&';
-
-  /// Combines two [WidgetStateMatch] values using logical "or".
-  const _WidgetStateOperator.or(this.value, this.other) : operator = '|';
-
-  /// Combines two [WidgetStateMatch] values using logical "not".
-  const _WidgetStateOperator.not(this.value)
-      : other = WidgetState.any,
-        operator = '~';
-
-  /// The operator being applied to the [WidgetStateMatch].
-  ///
-  /// One of `&`, `|`, or `~`.
-  final String operator;
-
-  /// The value to which the [operator] is applied.
-  ///
-  /// For example, when performing `WidgetState.focused & WidgetState.error`,
-  /// the [value] is [WidgetState.focused].
-  final WidgetStateMatch value;
-
-  /// The secondary value to which the [operator] is applied.
-  ///
-  /// For example, when performing `WidgetState.focused & WidgetState.error`,
-  /// [other] is set to [WidgetState.error].
-  ///
-  /// If the operator is `~`, [other] isn't used.
-  final WidgetStateMatch other;
-
-  @override
-  bool match(Set<WidgetState> states) {
-    return switch (operator) {
-      '&' => value.match(states) && other.match(states),
-      '|' => value.match(states) || other.match(states),
-      '~' => !value.match(states),
-      _ => throw ArgumentError('Invalid operator: "$operator"'),
-    };
+  /// Takes a [WidgetStateMatch] and applies the logical "not".
+  WidgetStateMatch operator ~() {
+    return _WidgetStateOperation((Set<WidgetState> states) => !_this(states));
   }
 }
 
@@ -90,7 +64,7 @@ class _AlwaysMatch extends WidgetStateMatch {
   const _AlwaysMatch();
 
   @override
-  bool match(Set<WidgetState> states) => true;
+  bool call(Set<WidgetState> states) => true;
 }
 
 /// Interactive states that some of the widgets can take on when receiving input
@@ -179,7 +153,7 @@ enum WidgetState with _WidgetStateOperators implements WidgetStateMatch {
   static const WidgetStateMatch any = _AlwaysMatch();
 
   @override
-  bool match(Set<WidgetState> states) => states.contains(this);
+  bool call(Set<WidgetState> states) => states.contains(this);
 }
 
 /// Signature for the function that returns a value of type `T` based on a given
@@ -802,7 +776,7 @@ class _WidgetStateMapper<T> implements WidgetStateProperty<T> {
   @override
   T resolve(Set<WidgetState> states) {
     for (final MapEntry<WidgetStateMatch, T>(:WidgetStateMatch key, :T value) in map.entries) {
-      if (key.match(states)) {
+      if (key(states)) {
         return value;
       }
     }
