@@ -1145,6 +1145,108 @@ void main() {
     );
   });
 
+  testWidgets('Radio button fill color resolves in enabled/disabled states using WidgetStateMap', (WidgetTester tester) async {
+    const Color activeEnabledFillColor = Color(0xFF000001);
+    const Color activeDisabledFillColor = Color(0xFF000002);
+    const Color inactiveEnabledFillColor = Color(0xFF000003);
+    const Color inactiveDisabledFillColor = Color(0xFF000004);
+
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+      WidgetState.disabled & WidgetState.selected: activeDisabledFillColor,
+      WidgetState.disabled: inactiveDisabledFillColor,
+      WidgetState.selected: activeEnabledFillColor,
+      WidgetState.any: inactiveEnabledFillColor,
+    });
+
+    int? groupValue = 0;
+    const Key radioKey = Key('radio');
+    Widget buildApp({required bool enabled}) {
+      return MaterialApp(
+        theme: theme,
+        home: Material(
+          child: Center(
+            child: StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+              return Container(
+                width: 100,
+                height: 100,
+                color: Colors.white,
+                child: Radio<int>(
+                  key: radioKey,
+                  value: 0,
+                  fillColor: fillColor,
+                  onChanged: enabled ? (int? newValue) {
+                    setState(() {
+                      groupValue = newValue;
+                    });
+                  } : null,
+                  groupValue: groupValue,
+                ),
+              );
+            }),
+          ),
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildApp(enabled: true));
+
+    // Selected and enabled.
+    await tester.pumpAndSettle();
+    expect(
+      Material.of(tester.element(find.byKey(radioKey))),
+      paints
+        ..rect(
+            color: const Color(0xffffffff),
+            rect: const Rect.fromLTRB(350.0, 250.0, 450.0, 350.0),
+          )
+        ..circle(color: activeEnabledFillColor)
+        ..circle(color: activeEnabledFillColor),
+    );
+
+    // Check when the radio isn't selected.
+    groupValue = 1;
+    await tester.pumpWidget(buildApp(enabled: true));
+    await tester.pumpAndSettle();
+    expect(
+        Material.of(tester.element(find.byKey(radioKey))),
+        paints
+          ..rect(
+              color: const Color(0xffffffff),
+              rect: const Rect.fromLTRB(350.0, 250.0, 450.0, 350.0),
+            )
+          ..circle(color: inactiveEnabledFillColor, style: PaintingStyle.stroke, strokeWidth: 2.0),
+    );
+
+    // Check when the radio is selected, but disabled.
+    groupValue = 0;
+    await tester.pumpWidget(buildApp(enabled: false));
+    await tester.pumpAndSettle();
+    expect(
+      Material.of(tester.element(find.byKey(radioKey))),
+      paints
+        ..rect(
+            color: const Color(0xffffffff),
+            rect: const Rect.fromLTRB(350.0, 250.0, 450.0, 350.0),
+          )
+        ..circle(color: activeDisabledFillColor)
+        ..circle(color: activeDisabledFillColor),
+    );
+
+    // Check when the radio is unselected and disabled.
+    groupValue = 1;
+    await tester.pumpWidget(buildApp(enabled: false));
+    await tester.pumpAndSettle();
+    expect(
+      Material.of(tester.element(find.byKey(radioKey))),
+      paints
+        ..rect(
+            color: const Color(0xffffffff),
+            rect: const Rect.fromLTRB(350.0, 250.0, 450.0, 350.0),
+          )
+        ..circle(color: inactiveDisabledFillColor, style: PaintingStyle.stroke, strokeWidth: 2.0),
+    );
+  });
+
   testWidgets('Material2 - Radio fill color resolves in hovered/focused states', (WidgetTester tester) async {
     final FocusNode focusNode = FocusNode(debugLabel: 'radio');
     tester.binding.focusManager.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;

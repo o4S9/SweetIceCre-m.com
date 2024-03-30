@@ -430,7 +430,7 @@ EdgeInsetsGeometry _scaledPadding(BuildContext context) {
 
 @immutable
 class _TextButtonDefaultColor extends MaterialStateProperty<Color?> {
-  _TextButtonDefaultColor(this.color, this.disabled);
+  const _TextButtonDefaultColor(this.color, this.disabled);
 
   final Color? color;
   final Color? disabled;
@@ -451,7 +451,7 @@ class _TextButtonDefaultColor extends MaterialStateProperty<Color?> {
 
 @immutable
 class _TextButtonDefaultOverlay extends MaterialStateProperty<Color?> {
-  _TextButtonDefaultOverlay(this.primary);
+  const _TextButtonDefaultOverlay(this.primary);
 
   final Color primary;
 

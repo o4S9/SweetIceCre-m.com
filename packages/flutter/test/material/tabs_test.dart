@@ -4686,6 +4686,41 @@ void main() {
     expect(unselectedTextStyle.color, unselectedColor);
   });
 
+  testWidgets('TabBar.labelColor resolves using WidgetStateColor.map', (WidgetTester tester) async {
+    const String tab1 = 'Tab 1';
+    const String tab2 = 'Tab 2';
+
+    const Color selectedColor = Color(0xff00ff00);
+    const Color unselectedColor = Color(0xffff0000);
+
+    // Test labelColor correctly resolves material states.
+    await tester.pumpWidget(boilerplate(
+      child: DefaultTabController(
+        length: 2,
+        child: TabBar(
+          labelColor: WidgetStateColor.map(<WidgetStateMatch, Color>{
+            WidgetState.selected: selectedColor,
+            WidgetState.any: unselectedColor,
+          }),
+          tabs: const <Widget>[
+            Text(tab1),
+            Text(tab2),
+          ],
+        ),
+      ),
+    ));
+
+    final IconThemeData selectedTabIcon = IconTheme.of(tester.element(find.text(tab1)));
+    final IconThemeData unselectedTabIcon = IconTheme.of(tester.element(find.text(tab2)));
+    final TextStyle selectedTextStyle = tester.renderObject<RenderParagraph>(find.text(tab1)).text.style!;
+    final TextStyle unselectedTextStyle = tester.renderObject<RenderParagraph>(find.text(tab2)).text.style!;
+
+    expect(selectedTabIcon.color, selectedColor);
+    expect(unselectedTabIcon.color, unselectedColor);
+    expect(selectedTextStyle.color, selectedColor);
+    expect(unselectedTextStyle.color, unselectedColor);
+  });
+
   testWidgets('labelColor & unselectedLabelColor override material state labelColor', (WidgetTester tester) async {
     const String tab1 = 'Tab 1';
     const String tab2 = 'Tab 2';

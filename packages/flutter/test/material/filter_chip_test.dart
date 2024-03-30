@@ -611,6 +611,99 @@ void main() {
     );
   });
 
+  testWidgets('FilterChip.color resolves with a WidgetStateMap', (WidgetTester tester) async {
+    const Color disabledSelectedColor = Color(0xffffff00);
+    const Color disabledColor = Color(0xff00ff00);
+    const Color backgroundColor = Color(0xff0000ff);
+    const Color selectedColor = Color(0xffff0000);
+    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMatch, Color>{
+      WidgetState.disabled & WidgetState.selected: disabledSelectedColor,
+      WidgetState.disabled: disabledColor,
+      WidgetState.selected: selectedColor,
+      WidgetState.any:      backgroundColor,
+    });
+    Widget buildApp({ required bool enabled, required bool selected }) {
+      return wrapForChip(
+        child: Column(
+          children: <Widget>[
+            FilterChip(
+              onSelected: enabled ? (bool value) { } : null,
+              selected: selected,
+              color: color,
+              label: const Text('FilterChip'),
+            ),
+            FilterChip.elevated(
+              onSelected: enabled ? (bool value) { } : null,
+              selected: selected,
+              color: color,
+              label: const Text('FilterChip.elevated'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Test enabled state.
+    await tester.pumpWidget(buildApp(enabled: true, selected: false));
+
+    // Enabled FilterChip should have the provided backgroundColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).first),
+      paints..rrect(color: backgroundColor),
+    );
+    // Enabled elevated FilterChip should have the provided backgroundColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).last),
+      paints..rrect(color: backgroundColor),
+    );
+
+    // Test disabled state.
+    await tester.pumpWidget(buildApp(enabled: false, selected: false));
+    await tester.pumpAndSettle();
+
+    // Disabled FilterChip should have the provided disabledColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).first),
+      paints..rrect(color: disabledColor),
+    );
+    // Disabled elevated FilterChip should have the provided disabledColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).last),
+      paints..rrect(color: disabledColor),
+    );
+
+    // Test enabled & selected state.
+    await tester.pumpWidget(buildApp(enabled: true, selected: true));
+    await tester.pumpAndSettle();
+
+    // Enabled & selected FilterChip should have the provided selectedColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).first),
+      paints..rrect(color: selectedColor),
+    );
+    // Enabled & selected elevated FilterChip should have the provided selectedColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).last),
+      paints..rrect(color: selectedColor),
+    );
+
+    // Test disabled & selected state.
+    await tester.pumpWidget(buildApp(enabled: false, selected: true));
+    await tester.pumpAndSettle();
+
+    // Disabled & selected FilterChip should have the provided disabledSelectedColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).first),
+      paints..rrect(color: disabledSelectedColor),
+    );
+    // Disabled & selected elevated FilterChip should have the
+    // provided disabledSelectedColor.
+    expect(
+      getMaterialBox(tester, find.byType(RawChip).last),
+      paints..rrect(color: disabledSelectedColor),
+    );
+  });
+
   testWidgets('FilterChip uses provided state color properties', (WidgetTester tester) async {
     const Color disabledColor = Color(0xff00ff00);
     const Color backgroundColor = Color(0xff0000ff);

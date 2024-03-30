@@ -1245,6 +1245,46 @@ void main() {
     expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
   });
 
+  testWidgets('Checkbox fill color resolves in enabled/disabled states (WidgetStateColor.map)', (WidgetTester tester) async {
+    const Color activeEnabledFillColor = Color(0xFF000001);
+    const Color activeDisabledFillColor = Color(0xFF000002);
+
+
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+      WidgetState.disabled: activeDisabledFillColor,
+      WidgetState.any: activeEnabledFillColor,
+    });
+
+    Widget buildFrame({required bool enabled}) {
+      return Material(
+        child: Theme(
+          data: theme,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Checkbox(
+                value: true,
+                fillColor: fillColor,
+                onChanged: enabled ? (bool? value) { } : null,
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    RenderBox getCheckboxRenderer() {
+      return tester.renderObject<RenderBox>(find.byType(Checkbox));
+    }
+
+    await tester.pumpWidget(buildFrame(enabled: true));
+    await tester.pumpAndSettle();
+    expect(getCheckboxRenderer(), paints..path(color: activeEnabledFillColor));
+
+    await tester.pumpWidget(buildFrame(enabled: false));
+    await tester.pumpAndSettle();
+    expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
+  });
+
   testWidgets('Checkbox fill color resolves in hovered/focused states', (WidgetTester tester) async {
     final FocusNode focusNode = FocusNode(debugLabel: 'checkbox');
     addTearDown(focusNode.dispose);
@@ -1265,6 +1305,58 @@ void main() {
 
     final MaterialStateProperty<Color> fillColor =
       MaterialStateColor.resolveWith(getFillColor);
+
+    Widget buildFrame() {
+      return Material(
+        child: Theme(
+          data: theme,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Checkbox(
+                focusNode: focusNode,
+                autofocus: true,
+                value: true,
+                fillColor: fillColor,
+                onChanged: (bool? value) { },
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    RenderBox getCheckboxRenderer() {
+      return tester.renderObject<RenderBox>(find.byType(Checkbox));
+    }
+
+    await tester.pumpWidget(buildFrame());
+    await tester.pumpAndSettle();
+    expect(focusNode.hasPrimaryFocus, isTrue);
+    expect(getCheckboxRenderer(), paints..path(color: focusedFillColor));
+
+    // Start hovering
+    final TestGesture gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer();
+    await gesture.moveTo(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(getCheckboxRenderer(), paints..path(color: hoveredFillColor));
+  });
+
+  testWidgets('Checkbox fill color resolves in hovered/focused states (WidgetStateColor.map)', (WidgetTester tester) async {
+    final FocusNode focusNode = FocusNode(debugLabel: 'checkbox');
+    addTearDown(focusNode.dispose);
+
+    tester.binding.focusManager.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
+    const Color hoveredFillColor = Color(0xFF000001);
+    const Color focusedFillColor = Color(0xFF000002);
+
+
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+      WidgetState.hovered: hoveredFillColor,
+      WidgetState.focused: focusedFillColor,
+      WidgetState.any: Colors.transparent,
+    });
 
     Widget buildFrame() {
       return Material(
@@ -1634,6 +1726,141 @@ void main() {
     await tester.pumpAndSettle();
   });
 
+  testWidgets('Checkbox overlay color resolves in active/pressed/focused/hovered states (WidgetStateColor.map)', (WidgetTester tester) async {
+    final FocusNode focusNode = FocusNode(debugLabel: 'Checkbox');
+    addTearDown(focusNode.dispose);
+    tester.binding.focusManager.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
+
+    const Color fillColor = Color(0xFF000000);
+    const Color activePressedOverlayColor = Color(0xFF000001);
+    const Color inactivePressedOverlayColor = Color(0xFF000002);
+    const Color hoverOverlayColor = Color(0xFF000003);
+    const Color focusOverlayColor = Color(0xFF000004);
+    const Color hoverColor = Color(0xFF000005);
+    const Color focusColor = Color(0xFF000006);
+
+    final WidgetStateMap<Color?> overlay = <WidgetStateMatch, Color?>{
+      WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
+      WidgetState.pressed: inactivePressedOverlayColor,
+      WidgetState.hovered: hoverOverlayColor,
+      WidgetState.focused: focusOverlayColor,
+    };
+    const double splashRadius = 24.0;
+
+    Widget buildCheckbox({bool active = false, bool focused = false, bool useOverlay = true}) {
+      return MaterialApp(
+        theme: theme,
+        home: Scaffold(
+          body: Checkbox(
+            focusNode: focusNode,
+            autofocus: focused,
+            value: active,
+            onChanged: (_) { },
+            fillColor: const MaterialStatePropertyAll<Color>(fillColor),
+            overlayColor: useOverlay ? MaterialStateProperty.map(overlay) : null,
+            hoverColor: hoverColor,
+            focusColor: focusColor,
+            splashRadius: splashRadius,
+          ),
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildCheckbox(useOverlay: false));
+    final TestGesture gesture1 = await tester.startGesture(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: fillColor.withAlpha(kRadialReactionAlpha),
+          radius: splashRadius,
+        ),
+      reason: 'Default inactive pressed Checkbox should have overlay color from fillColor',
+    );
+
+    await tester.pumpWidget(buildCheckbox(active: true, useOverlay: false));
+    final TestGesture gesture2 = await tester.startGesture(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: fillColor.withAlpha(kRadialReactionAlpha),
+          radius: splashRadius,
+        ),
+      reason: 'Default active pressed Checkbox should have overlay color from fillColor',
+    );
+
+    await tester.pumpWidget(buildCheckbox());
+    final TestGesture gesture3 = await tester.startGesture(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: inactivePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Inactive pressed Checkbox should have overlay color: $inactivePressedOverlayColor',
+    );
+
+    await tester.pumpWidget(buildCheckbox(active: true));
+    final TestGesture gesture4 = await tester.startGesture(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: activePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Active pressed Checkbox should have overlay color: $activePressedOverlayColor',
+    );
+
+    await tester.pumpWidget(Container()); // reset test
+    await tester.pumpWidget(buildCheckbox(focused: true));
+    await tester.pumpAndSettle();
+
+    expect(focusNode.hasPrimaryFocus, isTrue);
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: focusOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Focused Checkbox should use overlay color $focusOverlayColor over $focusColor',
+    );
+
+    // Start hovering
+    final TestGesture gesture5 = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture5.addPointer();
+    await gesture5.moveTo(tester.getCenter(find.byType(Checkbox)));
+    await tester.pumpAndSettle();
+
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: hoverOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Hovered Checkbox should use overlay color $hoverOverlayColor over $hoverColor',
+    );
+
+    // Finish gestures to release resources.
+    await gesture1.up();
+    await gesture2.up();
+    await gesture3.up();
+    await gesture4.up();
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('Tristate Checkbox overlay color resolves in pressed active/inactive states', (WidgetTester tester) async {
     const Color activePressedOverlayColor = Color(0xFF000001);
     const Color inactivePressedOverlayColor = Color(0xFF000002);
@@ -1666,6 +1893,108 @@ void main() {
                   });
                 },
                 overlayColor: MaterialStateProperty.resolveWith(getOverlayColor),
+                splashRadius: splashRadius,
+              );
+            },
+          ),
+        ),
+      );
+    }
+
+    // The checkbox is inactive.
+    await tester.pumpWidget(buildTristateCheckbox());
+    gesture = await tester.press(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    expect(value, false);
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: inactivePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Inactive pressed Checkbox should have overlay color: $inactivePressedOverlayColor',
+    );
+
+    // The checkbox is active.
+    await gesture.up();
+    gesture = await tester.press(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    expect(value, true);
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: activePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Active pressed Checkbox should have overlay color: $activePressedOverlayColor',
+    );
+
+    // The checkbox is active in tri-state.
+    await gesture.up();
+    gesture = await tester.press(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    expect(value, null);
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: activePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Active (tristate) pressed Checkbox should have overlay color: $activePressedOverlayColor',
+    );
+
+    // The checkbox is inactive again.
+    await gesture.up();
+    gesture = await tester.press(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    expect(value, false);
+    expect(
+      Material.of(tester.element(find.byType(Checkbox))),
+      paints
+        ..circle(
+          color: inactivePressedOverlayColor,
+          radius: splashRadius,
+        ),
+      reason: 'Inactive pressed Checkbox should have overlay color: $inactivePressedOverlayColor',
+    );
+
+    await gesture.up();
+  });
+
+  testWidgets('Tristate Checkbox overlay color resolves in pressed active/inactive states (WidgetStateColor.map)', (WidgetTester tester) async {
+    const Color activePressedOverlayColor = Color(0xFF000001);
+    const Color inactivePressedOverlayColor = Color(0xFF000002);
+
+    final WidgetStateMap<Color?> overlay = <WidgetStateMatch, Color?>{
+      WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
+      WidgetState.selected: inactivePressedOverlayColor,
+    };
+    const double splashRadius = 24.0;
+    TestGesture gesture;
+    bool? value = false;
+
+    Widget buildTristateCheckbox() {
+      return MaterialApp(
+        theme: theme,
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Checkbox(
+                value: value,
+                tristate: true,
+                onChanged: (bool? v) {
+                  setState(() {
+                    value = v;
+                  });
+                },
+                overlayColor: MaterialStateProperty.map(overlay),
                 splashRadius: splashRadius,
               );
             },

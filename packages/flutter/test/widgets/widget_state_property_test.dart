@@ -20,6 +20,22 @@ void main() {
     expect(value.resolve(<WidgetState>{WidgetState.error}), WidgetState.error);
   });
 
+  test('WidgetStateProperty.map()', () {
+    final WidgetStateProperty<WidgetState?> value = WidgetStateProperty.map<WidgetState?>(
+      <WidgetStateMatch, WidgetState?>{
+        WidgetState.hovered | WidgetState.focused | WidgetState.pressed: WidgetState.selected,
+        ~WidgetState.disabled: WidgetState.focused,
+      },
+    );
+    expect(value.resolve(<WidgetState>{WidgetState.hovered}), WidgetState.selected);
+    expect(value.resolve(<WidgetState>{WidgetState.focused}), WidgetState.selected);
+    expect(value.resolve(<WidgetState>{WidgetState.pressed}), WidgetState.selected);
+    expect(value.resolve(<WidgetState>{WidgetState.dragged}),  WidgetState.focused);
+    expect(value.resolve(<WidgetState>{WidgetState.selected}), WidgetState.focused);
+    expect(value.resolve(<WidgetState>{WidgetState.error}),    WidgetState.focused);
+    expect(value.resolve(<WidgetState>{WidgetState.disabled}), null);
+  });
+
   test('WidgetStateProperty.all()', () {
     final WidgetStateProperty<int> value = WidgetStateProperty.all<int>(123);
     expect(value.resolve(<WidgetState>{WidgetState.hovered}), 123);
