@@ -443,7 +443,7 @@ abstract class WidgetStateBorderSide extends BorderSide implements WidgetStatePr
   /// ```dart
   /// ChipTheme(
   ///   data: Theme.of(context).chipTheme.copyWith(
-  ///     side: const WidgetStateBorderSide.map(<WidgetStateMatch, BorderSide>{
+  ///     side: const WidgetStateBorderSide.map(<WidgetStateMapKey, BorderSide>{
   ///       WidgetState.selected: BorderSide(color: Colors.red),
   ///       // returns null if not selected, deferring to default theme/widget value.
   ///     }),
@@ -459,7 +459,7 @@ abstract class WidgetStateBorderSide extends BorderSide implements WidgetStatePr
   /// ```dart
   /// const Chip(
   ///   label: Text('Transceiver'),
-  ///   side: WidgetStateBorderSide.map(<WidgetStateMatch, BorderSide>{
+  ///   side: WidgetStateBorderSide.map(<WidgetStateMapKey, BorderSide>{
   ///     WidgetState.selected: BorderSide(color: Colors.red),
   ///     // returns null if not selected, deferring to default theme/widget value.
   ///   }),
@@ -713,7 +713,7 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// Example:
 ///
 /// ```dart
-/// WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color?>{
+/// WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color?>{
 ///   WidgetState.error & WidgetState.selected: Colors.red,
 ///   WidgetState.selected & ~WidgetState.focused: Colors.blueAccent,
 ///   WidgetState.hovered | WidgetState.focused: Colors.blue,
@@ -739,9 +739,9 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// and [WidgetState.any] can be used for non-nullable types:
 ///
 /// ```dart
-/// final WidgetStateMatch selectedError = WidgetState.selected & WidgetState.error;
+/// final WidgetStateMapKey selectedError = WidgetState.selected & WidgetState.error;
 ///
-/// final WidgetStateProperty<Color> color = WidgetStateProperty.map<Color>(<WidgetStateMatch, Color>{
+/// final WidgetStateProperty<Color> color = WidgetStateProperty.map<Color>(<WidgetStateMapKey, Color>{
 ///   selectedError & WidgetState.hovered: Colors.redAccent,
 ///   selectedError: Colors.red,
 ///   WidgetState.disabled: Colors.grey,
