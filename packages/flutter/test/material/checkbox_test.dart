@@ -1974,7 +1974,7 @@ void main() {
 
     final WidgetStateMap<Color?> overlay = <WidgetStateMatch, Color?>{
       WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
-      WidgetState.selected: inactivePressedOverlayColor,
+      WidgetState.pressed: inactivePressedOverlayColor,
     };
     const double splashRadius = 24.0;
     TestGesture gesture;

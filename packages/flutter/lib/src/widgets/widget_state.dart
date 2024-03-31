@@ -743,7 +743,7 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// ```dart
 /// final WidgetStateMatch selectedError = WidgetState.selected & WidgetState.error;
 ///
-/// final WidgetStateProperty<Color> color = WidgetStateProperty.map<Color>({
+/// final WidgetStateProperty<Color> color = WidgetStateProperty.map<Color>(<WidgetStateMatch, Color>{
 ///   selectedError & WidgetState.hovered: Colors.redAccent,
 ///   selectedError: Colors.red,
 ///   WidgetState.disabled: Colors.grey,
@@ -751,18 +751,20 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// });
 ///
 /// // MaterialPropertyResolver implementation:
-/// final WidgetStateProperty<Color> color = WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
-///   if (states.containsAll(<WidgetState>{WidgetState.selected, WidgetState.error})) {
-///     if (states.contains(WidgetState.hovered)) {
-///       return Colors.redAccent;
+/// final WidgetStateProperty<Color> colorResolveWith = WidgetStateProperty.resolveWith<Color>(
+///   (Set<WidgetState> states) {
+///     if (states.containsAll(<WidgetState>{WidgetState.selected, WidgetState.error})) {
+///       if (states.contains(WidgetState.hovered)) {
+///         return Colors.redAccent;
+///       }
+///       return Colors.red;
 ///     }
-///     return Colors.red;
-///   }
-///   if (states.contains(WidgetState.disabled)) {
-///     return Colors.grey;
-///   }
-///   return Colors.black;
-/// });
+///     if (states.contains(WidgetState.disabled)) {
+///       return Colors.grey;
+///     }
+///     return Colors.black;
+///   },
+/// );
 /// ```
 /// {@endtemplate}
 typedef WidgetStateMap<T> = Map<WidgetStateMatch, T>;

@@ -1294,7 +1294,7 @@ void main() {
 
     final WidgetStateMap<Color?> overlayMap = <WidgetStateMatch, Color?>{
       WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
-      WidgetState.selected: inactivePressedOverlayColor,
+      WidgetState.pressed: inactivePressedOverlayColor,
       WidgetState.hovered: hoverOverlayColor,
     };
 
