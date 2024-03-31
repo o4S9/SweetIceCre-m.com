@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 /// and resolved using [WidgetStateProperty.map].
 ///
 /// {@macro flutter.widgets.WidgetStateProperty.WidgetStateMap}
-abstract class WidgetStateMapKey with _WidgetStateOperators {
+abstract class WidgetStateMapKey with WidgetStateOperators {
   /// Abstract const constructor. This constructor enables subclasses to provide
   /// const constructors so that they can be used in const expressions.
   const WidgetStateMapKey();
@@ -23,7 +23,7 @@ abstract class WidgetStateMapKey with _WidgetStateOperators {
   bool call(Set<WidgetState> states);
 }
 
-/// A private class, used in [_WidgetStateOperators].
+/// A private class, used in [WidgetStateOperators].
 class _WidgetStateOperation extends WidgetStateMapKey {
   const _WidgetStateOperation(this._call);
 
@@ -40,7 +40,7 @@ class _WidgetStateOperation extends WidgetStateMapKey {
 /// instead `implements` the [WidgetStateMapKey] class using this mixin.
 ///
 /// {@macro flutter.widgets.WidgetStateProperty.WidgetStateMap}
-mixin _WidgetStateOperators {
+mixin WidgetStateOperators {
   WidgetStateMapKey get _this => this as WidgetStateMapKey;
 
   /// Combines two [WidgetStateMapKey] values using logical "and".
@@ -97,7 +97,7 @@ class _AlwaysMatch extends WidgetStateMapKey {
 ///    `WidgetStateProperty` which is used in APIs that need to accept either
 ///    a [TextStyle] or a [WidgetStateProperty<TextStyle>].
 /// {@endtemplate}
-enum WidgetState with _WidgetStateOperators implements WidgetStateMapKey {
+enum WidgetState with WidgetStateOperators implements WidgetStateMapKey {
   /// The state when the user drags their mouse cursor over the given widget.
   ///
   /// See: https://material.io/design/interaction/states.html#hover.
@@ -698,7 +698,7 @@ class _LerpProperties<T> implements WidgetStateProperty<T?> {
 }
 
 class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
-  const _WidgetStatePropertyWith(this._resolve);
+  _WidgetStatePropertyWith(this._resolve);
 
   final WidgetPropertyResolver<T> _resolve;
 
