@@ -442,7 +442,7 @@ abstract class WidgetStateBorderSide extends BorderSide implements WidgetStatePr
   /// ```dart
   /// ChipTheme(
   ///   data: Theme.of(context).chipTheme.copyWith(
-  ///     side: WidgetStateBorderSide.map({
+  ///     side: const WidgetStateBorderSide.map(<WidgetStateMatch, BorderSide>{
   ///       WidgetState.selected: BorderSide(color: Colors.red),
   ///       // returns null if not selected, deferring to default theme/widget value.
   ///     }),
@@ -456,9 +456,9 @@ abstract class WidgetStateBorderSide extends BorderSide implements WidgetStatePr
   /// Alternatively:
   ///
   /// ```dart
-  /// Chip(
-  ///   label: const Text('Transceiver'),
-  ///   side: WidgetStateBorderSide.map({
+  /// const Chip(
+  ///   label: Text('Transceiver'),
+  ///   side: WidgetStateBorderSide.map(<WidgetStateMatch, BorderSide>{
   ///     WidgetState.selected: BorderSide(color: Colors.red),
   ///     // returns null if not selected, deferring to default theme/widget value.
   ///   }),
@@ -715,7 +715,7 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// Example:
 ///
 /// ```dart
-/// WidgetStateProperty.map<Color?>({
+/// WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color?>{
 ///   WidgetState.error & WidgetState.selected: Colors.red,
 ///   WidgetState.selected & ~WidgetState.focused: Colors.blueAccent,
 ///   WidgetState.hovered | WidgetState.focused: Colors.blue,
@@ -723,8 +723,8 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// });
 ///
 /// // the same implementation, but with a MaterialPropertyResolver:
-/// WidgetStateProperty.resolveWith<Color?>((states) {
-///   if (states.containsAll({WidgetState.error, WidgetState.selected})) {
+/// WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+///   if (states.containsAll(<WidgetState>{WidgetState.error, WidgetState.selected})) {
 ///     return Colors.red;
 ///   } else if (states.contains(WidgetState.selected) && !states.contains(WidgetState.focused)) {
 ///     return Colors.blueAccent;
@@ -741,9 +741,9 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// and [WidgetState.any] can be used for non-nullable types:
 ///
 /// ```dart
-/// final selectedError = WidgetState.selected & WidgetState.error;
+/// final WidgetStateMatch selectedError = WidgetState.selected & WidgetState.error;
 ///
-/// WidgetStateProperty.map<Color>({
+/// final WidgetStateProperty<Color> color = WidgetStateProperty.map<Color>({
 ///   selectedError & WidgetState.hovered: Colors.redAccent,
 ///   selectedError: Colors.red,
 ///   WidgetState.disabled: Colors.grey,
@@ -751,8 +751,8 @@ class _WidgetStatePropertyWith<T> implements WidgetStateProperty<T> {
 /// });
 ///
 /// // MaterialPropertyResolver implementation:
-/// WidgetStateProperty.resolveWith<Color>((states) {
-///   if (states.containsAll({WidgetState.selected, WidgetState.error})) {
+/// final WidgetStateProperty<Color> color = WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+///   if (states.containsAll(<WidgetState>{WidgetState.selected, WidgetState.error})) {
 ///     if (states.contains(WidgetState.hovered)) {
 ///       return Colors.redAccent;
 ///     }
