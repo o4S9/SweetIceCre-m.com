@@ -380,7 +380,7 @@ void main() {
       final double caretHeight = painter.getFullHeightForCaret(
         const ui.TextPosition(offset: 0),
         ui.Rect.zero,
-      )!;
+      );
       expect(caretHeight, 50.0);
       painter.dispose();
     }, skip: isBrowser && !isCanvasKit); // https://github.com/flutter/flutter/issues/56308
@@ -1427,6 +1427,12 @@ void main() {
     expect(painter.debugDisposed, false);
     painter.dispose();
     expect(painter.debugDisposed, true);
+  });
+
+  test('TextPainter - asserts if disposed more than once', () {
+    final TextPainter painter = TextPainter()..dispose();
+    expect(painter.debugDisposed, isTrue);
+    expect(painter.dispose, throwsAssertionError);
   });
 
   test('TextPainter computeWidth', () {

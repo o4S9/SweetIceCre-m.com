@@ -8,8 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_testing/leak_tracker_testing.dart';
 
 void main() {
+  // TODO(polina-c): _DropdownMenuState should not be used after disposal, https://github.com/flutter/flutter/issues/145622 [leaks-to-clean]
+  LeakTesting.settings = LeakTesting.settings.withIgnoredAll();
+
   const String longText = 'one two three four five six seven eight nine ten eleven twelve';
   final List<DropdownMenuEntry<TestMenu>> menuChildren = <DropdownMenuEntry<TestMenu>>[];
 
@@ -1119,17 +1123,10 @@ void main() {
     await tester.tap(find.byType(DropdownMenu<TestMenu>));
     await tester.pump();
 
-    late final bool isMobile;
-    switch (themeData.platform) {
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-      case TargetPlatform.fuchsia:
-        isMobile = true;
-      case TargetPlatform.macOS:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        isMobile = false;
-    }
+    final bool isMobile = switch (themeData.platform) {
+      TargetPlatform.android || TargetPlatform.iOS || TargetPlatform.fuchsia => true,
+      TargetPlatform.macOS || TargetPlatform.linux || TargetPlatform.windows => false,
+    };
     int expectedCount = isMobile ? 0 : 1;
 
     // Test onSelected on key press
@@ -1343,6 +1340,68 @@ void main() {
     final TestGesture gesture = await tester.createGesture(kind: PointerDeviceKind.mouse, pointer: 1);
     await gesture.moveTo(tester.getCenter(textFieldFinder));
     expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.click);
+  });
+
+  testWidgets('If enabled is false, the mouse cursor should be deferred when hovered', (WidgetTester tester) async {
+    Widget buildDropdownMenu({ bool enabled = true,  bool? requestFocusOnTap }) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: <Widget>[
+              DropdownMenu<TestMenu>(
+                enabled: enabled,
+                requestFocusOnTap: requestFocusOnTap,
+                dropdownMenuEntries: menuChildren,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Check mouse cursor dropdown menu is disabled and requestFocusOnTap is true.
+    await tester.pumpWidget(buildDropdownMenu(enabled: false, requestFocusOnTap: true));
+    await tester.pumpAndSettle();
+
+    Finder textFieldFinder = find.byType(TextField);
+    TextField textField = tester.widget<TextField>(textFieldFinder);
+    expect(textField.canRequestFocus, true);
+
+    final TestGesture gesture = await tester.createGesture(kind: PointerDeviceKind.mouse, pointer: 1);
+    await gesture.moveTo(tester.getCenter(textFieldFinder));
+    expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.basic);
+
+    // Remove the pointer.
+    await gesture.removePointer();
+
+    // Check mouse cursor dropdown menu is disabled and requestFocusOnTap is false.
+    await tester.pumpWidget(buildDropdownMenu(enabled: false, requestFocusOnTap: false));
+    await tester.pumpAndSettle();
+
+    textFieldFinder = find.byType(TextField);
+    textField = tester.widget<TextField>(textFieldFinder);
+    expect(textField.canRequestFocus, false);
+
+    // Add a new pointer.
+    await gesture.addPointer();
+    await gesture.moveTo(tester.getCenter(textFieldFinder));
+    expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.basic);
+
+    // Remove the pointer.
+    await gesture.removePointer();
+
+    // Check enabled dropdown menu updates the mouse cursor when hovered.
+    await tester.pumpWidget(buildDropdownMenu(requestFocusOnTap: true));
+    await tester.pumpAndSettle();
+
+    textFieldFinder = find.byType(TextField);
+    textField = tester.widget<TextField>(textFieldFinder);
+    expect(textField.canRequestFocus, true);
+
+    // Add a new pointer.
+    await gesture.addPointer();
+    await gesture.moveTo(tester.getCenter(textFieldFinder));
+    expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.text);
   });
 
   testWidgets('The menu has the same width as the input field in ListView', (WidgetTester tester) async {
@@ -1807,8 +1866,7 @@ void main() {
     checkExpectedHighlight(searchResult: 'Read', otherItems: <String>['All', 'Unread']);
   });
 
-   testWidgets('onSelected gets called when a selection is made in a nested menu',
-      (WidgetTester tester) async {
+   testWidgets('onSelected gets called when a selection is made in a nested menu', (WidgetTester tester) async {
     int selectionCount = 0;
 
     final ThemeData themeData = ThemeData();
