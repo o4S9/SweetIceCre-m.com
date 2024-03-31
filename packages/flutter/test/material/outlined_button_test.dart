@@ -514,7 +514,7 @@ void main() {
             child: OutlinedButtonTheme(
               data: OutlinedButtonThemeData(
                 style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.map<Color>(<WidgetStateMatch, Color>{
+                  foregroundColor: MaterialStateProperty.map<Color>(<WidgetStateMapKey, Color>{
                     MaterialState.pressed | MaterialState.hovered | MaterialState.focused: Colors.blue[900]!,
                     WidgetState.any: Colors.blue[800]!,
                   }),

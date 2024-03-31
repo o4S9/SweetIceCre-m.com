@@ -847,7 +847,7 @@ void main() {
     const Color disabledColor = Color(0x00000006);
 
     final TextStyle labelStyle =  TextStyle(
-      color: WidgetStateColor.map(<WidgetStateMatch, Color>{
+      color: WidgetStateColor.map(<WidgetStateMapKey, Color>{
         WidgetState.disabled: disabledColor,
         WidgetState.pressed:  pressedColor,
         WidgetState.hovered:  hoverColor,
@@ -1223,7 +1223,7 @@ void main() {
       return MaterialApp(
         theme: ThemeData(
           chipTheme: ChipThemeData(
-            color: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+            color: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
               WidgetState.disabled & WidgetState.selected: disabledSelectedColor,
               WidgetState.disabled: disabledColor,
               WidgetState.selected: selectedColor,

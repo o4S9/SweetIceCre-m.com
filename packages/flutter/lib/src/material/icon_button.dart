@@ -981,7 +981,7 @@ class _IconButtonM3 extends ButtonStyleButton {
 
 @immutable
 class _IconButtonDefaultBackground extends MaterialStateProperty<Color?> {
-  const _IconButtonDefaultBackground(this.background, this.disabledBackground);
+  _IconButtonDefaultBackground(this.background, this.disabledBackground);
 
   final Color? background;
   final Color? disabledBackground;
@@ -1002,7 +1002,7 @@ class _IconButtonDefaultBackground extends MaterialStateProperty<Color?> {
 
 @immutable
 class _IconButtonDefaultForeground extends MaterialStateProperty<Color?> {
-  const _IconButtonDefaultForeground(this.foregroundColor, this.disabledForegroundColor);
+  _IconButtonDefaultForeground(this.foregroundColor, this.disabledForegroundColor);
 
   final Color? foregroundColor;
   final Color? disabledForegroundColor;
@@ -1023,7 +1023,7 @@ class _IconButtonDefaultForeground extends MaterialStateProperty<Color?> {
 
 @immutable
 class _IconButtonDefaultOverlay extends MaterialStateProperty<Color?> {
-  const _IconButtonDefaultOverlay(this.foregroundColor, this.focusColor, this.hoverColor, this.highlightColor);
+  _IconButtonDefaultOverlay(this.foregroundColor, this.focusColor, this.hoverColor, this.highlightColor);
 
   final Color? foregroundColor;
   final Color? focusColor;

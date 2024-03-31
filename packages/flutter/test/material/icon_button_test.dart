@@ -2178,7 +2178,7 @@ void main() {
               body: Center(
                 child: IconButton(
                   style: ButtonStyle(
-                    foregroundColor: WidgetStateProperty.map<Color>(<WidgetStateMatch, Color>{
+                    foregroundColor: WidgetStateProperty.map<Color>(<WidgetStateMapKey, Color>{
                       WidgetState.pressed:  pressedColor,
                       WidgetState.hovered:  hoverColor,
                       WidgetState.focused:  focusedColor,

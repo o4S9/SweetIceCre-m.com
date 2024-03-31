@@ -1324,7 +1324,7 @@ void main() {
       return MaterialApp(
         theme: ThemeData.light().copyWith(
           bottomSheetTheme:  BottomSheetThemeData(
-            dragHandleColor: WidgetStateColor.map(<WidgetStateMatch, Color>{
+            dragHandleColor: WidgetStateColor.map(<WidgetStateMapKey, Color>{
               WidgetState.hovered: hoveringColor,
               WidgetState.any: defaultColor,
             }),

@@ -1151,7 +1151,7 @@ void main() {
     const Color inactiveEnabledFillColor = Color(0xFF000003);
     const Color inactiveDisabledFillColor = Color(0xFF000004);
 
-    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
       WidgetState.disabled & WidgetState.selected: activeDisabledFillColor,
       WidgetState.disabled: inactiveDisabledFillColor,
       WidgetState.selected: activeEnabledFillColor,

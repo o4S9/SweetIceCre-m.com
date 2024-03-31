@@ -4698,7 +4698,7 @@ void main() {
       child: DefaultTabController(
         length: 2,
         child: TabBar(
-          labelColor: WidgetStateColor.map(<WidgetStateMatch, Color>{
+          labelColor: WidgetStateColor.map(<WidgetStateMapKey, Color>{
             WidgetState.selected: selectedColor,
             WidgetState.any: unselectedColor,
           }),

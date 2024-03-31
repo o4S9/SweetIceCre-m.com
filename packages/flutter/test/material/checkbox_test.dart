@@ -1245,46 +1245,6 @@ void main() {
     expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
   });
 
-  testWidgets('Checkbox fill color resolves in enabled/disabled states (WidgetStateColor.map)', (WidgetTester tester) async {
-    const Color activeEnabledFillColor = Color(0xFF000001);
-    const Color activeDisabledFillColor = Color(0xFF000002);
-
-
-    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
-      WidgetState.disabled: activeDisabledFillColor,
-      WidgetState.any: activeEnabledFillColor,
-    });
-
-    Widget buildFrame({required bool enabled}) {
-      return Material(
-        child: Theme(
-          data: theme,
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Checkbox(
-                value: true,
-                fillColor: fillColor,
-                onChanged: enabled ? (bool? value) { } : null,
-              );
-            },
-          ),
-        ),
-      );
-    }
-
-    RenderBox getCheckboxRenderer() {
-      return tester.renderObject<RenderBox>(find.byType(Checkbox));
-    }
-
-    await tester.pumpWidget(buildFrame(enabled: true));
-    await tester.pumpAndSettle();
-    expect(getCheckboxRenderer(), paints..path(color: activeEnabledFillColor));
-
-    await tester.pumpWidget(buildFrame(enabled: false));
-    await tester.pumpAndSettle();
-    expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
-  });
-
   testWidgets('Checkbox fill color resolves in hovered/focused states', (WidgetTester tester) async {
     final FocusNode focusNode = FocusNode(debugLabel: 'checkbox');
     addTearDown(focusNode.dispose);
@@ -1352,7 +1312,7 @@ void main() {
     const Color focusedFillColor = Color(0xFF000002);
 
 
-    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
       WidgetState.hovered: hoveredFillColor,
       WidgetState.focused: focusedFillColor,
       WidgetState.any: Colors.transparent,
@@ -1739,7 +1699,7 @@ void main() {
     const Color hoverColor = Color(0xFF000005);
     const Color focusColor = Color(0xFF000006);
 
-    final WidgetStateMap<Color?> overlay = <WidgetStateMatch, Color?>{
+    final WidgetStateMap<Color?> overlay = <WidgetStateMapKey, Color?>{
       WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
       WidgetState.pressed: inactivePressedOverlayColor,
       WidgetState.hovered: hoverOverlayColor,
@@ -1893,108 +1853,6 @@ void main() {
                   });
                 },
                 overlayColor: MaterialStateProperty.resolveWith(getOverlayColor),
-                splashRadius: splashRadius,
-              );
-            },
-          ),
-        ),
-      );
-    }
-
-    // The checkbox is inactive.
-    await tester.pumpWidget(buildTristateCheckbox());
-    gesture = await tester.press(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-
-    expect(value, false);
-    expect(
-      Material.of(tester.element(find.byType(Checkbox))),
-      paints
-        ..circle(
-          color: inactivePressedOverlayColor,
-          radius: splashRadius,
-        ),
-      reason: 'Inactive pressed Checkbox should have overlay color: $inactivePressedOverlayColor',
-    );
-
-    // The checkbox is active.
-    await gesture.up();
-    gesture = await tester.press(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-
-    expect(value, true);
-    expect(
-      Material.of(tester.element(find.byType(Checkbox))),
-      paints
-        ..circle(
-          color: activePressedOverlayColor,
-          radius: splashRadius,
-        ),
-      reason: 'Active pressed Checkbox should have overlay color: $activePressedOverlayColor',
-    );
-
-    // The checkbox is active in tri-state.
-    await gesture.up();
-    gesture = await tester.press(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-
-    expect(value, null);
-    expect(
-      Material.of(tester.element(find.byType(Checkbox))),
-      paints
-        ..circle(
-          color: activePressedOverlayColor,
-          radius: splashRadius,
-        ),
-      reason: 'Active (tristate) pressed Checkbox should have overlay color: $activePressedOverlayColor',
-    );
-
-    // The checkbox is inactive again.
-    await gesture.up();
-    gesture = await tester.press(find.byType(Checkbox));
-    await tester.pumpAndSettle();
-
-    expect(value, false);
-    expect(
-      Material.of(tester.element(find.byType(Checkbox))),
-      paints
-        ..circle(
-          color: inactivePressedOverlayColor,
-          radius: splashRadius,
-        ),
-      reason: 'Inactive pressed Checkbox should have overlay color: $inactivePressedOverlayColor',
-    );
-
-    await gesture.up();
-  });
-
-  testWidgets('Tristate Checkbox overlay color resolves in pressed active/inactive states (WidgetStateColor.map)', (WidgetTester tester) async {
-    const Color activePressedOverlayColor = Color(0xFF000001);
-    const Color inactivePressedOverlayColor = Color(0xFF000002);
-
-    final WidgetStateMap<Color?> overlay = <WidgetStateMatch, Color?>{
-      WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
-      WidgetState.pressed: inactivePressedOverlayColor,
-    };
-    const double splashRadius = 24.0;
-    TestGesture gesture;
-    bool? value = false;
-
-    Widget buildTristateCheckbox() {
-      return MaterialApp(
-        theme: theme,
-        home: Scaffold(
-          body: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Checkbox(
-                value: value,
-                tristate: true,
-                onChanged: (bool? v) {
-                  setState(() {
-                    value = v;
-                  });
-                },
-                overlayColor: MaterialStateProperty.map(overlay),
                 splashRadius: splashRadius,
               );
             },

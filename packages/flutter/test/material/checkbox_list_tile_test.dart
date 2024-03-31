@@ -138,7 +138,7 @@ void main() {
         child: Theme(
           data: ThemeData(
             checkboxTheme: CheckboxThemeData(
-              fillColor: WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color?>{
+              fillColor: WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color?>{
                 WidgetState.selected: themeColor,
               }),
             ),

@@ -206,11 +206,11 @@ void main() {
       useMaterial3: true,
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+          backgroundColor: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
             WidgetState.disabled: Colors.blue,
             WidgetState.selected: Colors.purple,
           }),
-          foregroundColor: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+          foregroundColor: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
             WidgetState.disabled: Colors.yellow,
             WidgetState.selected: Colors.brown,
             WidgetState.any:      Colors.cyan,

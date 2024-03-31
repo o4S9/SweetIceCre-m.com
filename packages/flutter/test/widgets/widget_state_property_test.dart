@@ -22,7 +22,7 @@ void main() {
 
   test('WidgetStateProperty.map()', () {
     final WidgetStateProperty<WidgetState?> value = WidgetStateProperty.map<WidgetState?>(
-      <WidgetStateMatch, WidgetState?>{
+      <WidgetStateMapKey, WidgetState?>{
         WidgetState.hovered | WidgetState.focused | WidgetState.pressed: WidgetState.selected,
         ~WidgetState.disabled: WidgetState.focused,
       },

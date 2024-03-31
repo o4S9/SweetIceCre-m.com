@@ -550,7 +550,7 @@ void main() {
     const Color disabledColor = Color(0xff00ff00);
     const Color backgroundColor = Color(0xff0000ff);
     const Color selectedColor = Color(0xffff0000);
-    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMapKey, Color>{
       WidgetState.disabled & WidgetState.selected: disabledSelectedColor,
       WidgetState.disabled: disabledColor,
       WidgetState.selected: selectedColor,

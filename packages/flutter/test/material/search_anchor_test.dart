@@ -488,7 +488,7 @@ void main() {
         home: Center(
           child: Material(
             child: SearchBar(
-              elevation: WidgetStateProperty.map<double>(<WidgetStateMatch, double>{
+              elevation: WidgetStateProperty.map<double>(<WidgetStateMapKey, double>{
                 WidgetState.pressed: pressedElevation,
                 WidgetState.hovered: hoveredElevation,
                 WidgetState.focused: focusedElevation,
@@ -788,13 +788,13 @@ void main() {
         home: Center(
           child: Material(
             child: SearchBar(
-              side: WidgetStateProperty.map<BorderSide>(<WidgetStateMatch, BorderSide>{
+              side: WidgetStateProperty.map<BorderSide>(<WidgetStateMapKey, BorderSide>{
                 WidgetState.pressed: pressedSide,
                 WidgetState.hovered: hoveredSide,
                 WidgetState.focused: focusedSide,
                 WidgetState.any:     defaultSide,
               }),
-              shape: WidgetStateProperty.map<OutlinedBorder>(<WidgetStateMatch, OutlinedBorder>{
+              shape: WidgetStateProperty.map<OutlinedBorder>(<WidgetStateMapKey, OutlinedBorder>{
                 WidgetState.pressed: pressedShape,
                 WidgetState.hovered: hoveredShape,
                 WidgetState.focused: focusedShape,

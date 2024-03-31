@@ -971,7 +971,7 @@ void main() {
     const Color inactiveDisabledFillColor = Color(0xFF000004);
 
 
-    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
       WidgetState.disabled & WidgetState.selected: activeDisabledFillColor,
       WidgetState.disabled: inactiveDisabledFillColor,
       WidgetState.selected: activeEnabledFillColor,
@@ -1292,7 +1292,7 @@ void main() {
     const Color hoverOverlayColor = Color(0xFF000003);
     const Color hoverColor = Color(0xFF000005);
 
-    final WidgetStateMap<Color?> overlayMap = <WidgetStateMatch, Color?>{
+    final WidgetStateMap<Color?> overlayMap = <WidgetStateMapKey, Color?>{
       WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
       WidgetState.pressed: inactivePressedOverlayColor,
       WidgetState.hovered: hoverOverlayColor,

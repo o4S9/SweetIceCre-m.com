@@ -183,15 +183,15 @@ void main() {
         theme: ThemeData(
           checkboxTheme: CheckboxThemeData(
             mouseCursor: const WidgetStatePropertyAll<MouseCursor?>(mouseCursor),
-            fillColor: WidgetStateProperty.map(<WidgetStateMatch, Color?>{
+            fillColor: WidgetStateProperty.map(<WidgetStateMapKey, Color?>{
               WidgetState.selected: selectedFillColor,
               WidgetState.any: defaultFillColor,
             }),
-            checkColor: WidgetStateProperty.map(<WidgetStateMatch, Color?>{
+            checkColor: WidgetStateProperty.map(<WidgetStateMapKey, Color?>{
               WidgetState.focused: focusedCheckColor,
               WidgetState.any: defaultCheckColor,
             }),
-            overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color?>{
+            overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color?>{
               WidgetState.focused: focusOverlayColor,
               WidgetState.hovered: hoverOverlayColor,
             }),
@@ -449,7 +449,7 @@ void main() {
       return MaterialApp(
         theme: ThemeData(
           checkboxTheme: CheckboxThemeData(
-            overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color?>{
+            overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color?>{
               WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
               WidgetState.pressed: inactivePressedOverlayColor,
             }),

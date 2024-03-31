@@ -911,7 +911,7 @@ class _DefaultFillColor extends MaterialStateProperty<Color> with Diagnosticable
 
 @immutable
 class _ToggleButtonDefaultOverlay extends MaterialStateProperty<Color?> {
-  const _ToggleButtonDefaultOverlay({
+  _ToggleButtonDefaultOverlay({
     required this.selected,
     required this.unselected,
     this.colorScheme,

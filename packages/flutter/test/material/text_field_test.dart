@@ -6948,7 +6948,7 @@ void main() {
             child: TextField(
               controller: controller,
               enabled: enabled,
-              style: const WidgetStateTextStyle.map(<WidgetStateMatch, TextStyle>{
+              style: const WidgetStateTextStyle.map(<WidgetStateMapKey, TextStyle>{
                 WidgetState.disabled: TextStyle(color: Colors.red),
                 WidgetState.any:      TextStyle(color: Colors.blue),
               }),

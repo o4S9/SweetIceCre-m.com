@@ -199,7 +199,7 @@ void main() {
         child: InputChip(
           onSelected: enabled ? (bool value) { } : null,
           selected: selected,
-          color: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+          color: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
             WidgetState.disabled & WidgetState.selected: disabledSelectedColor,
             WidgetState.disabled: disabledColor,
             WidgetState.selected: selectedColor,

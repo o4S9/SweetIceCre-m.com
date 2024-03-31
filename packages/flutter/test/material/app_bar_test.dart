@@ -2345,7 +2345,7 @@ void main() {
           home: Scaffold(
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: WidgetStateColor.map(<WidgetStateMatch, Color>{
+              backgroundColor: WidgetStateColor.map(<WidgetStateMapKey, Color>{
                 WidgetState.scrolledUnder: scrolledColor,
                 WidgetState.any: defaultColor,
               }),
@@ -2580,7 +2580,7 @@ void main() {
           home: Scaffold(
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: WidgetStateColor.map(<WidgetStateMatch, Color>{
+              backgroundColor: WidgetStateColor.map(<WidgetStateMapKey, Color>{
                 WidgetState.scrolledUnder: scrolledColor,
                 WidgetState.any: defaultColor,
               }),

@@ -347,30 +347,30 @@ void main() {
     final ThemeData themeData = ThemeData(
       useMaterial3: true,
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+        thumbColor: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
           WidgetState.selected: selectedThumbColor,
           WidgetState.any:      defaultThumbColor,
         }),
-        trackColor: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+        trackColor: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
           WidgetState.selected: selectedTrackColor,
           WidgetState.any:      defaultTrackColor,
         }),
-        trackOutlineColor: WidgetStateProperty.map(<WidgetStateMatch, Color>{
+        trackOutlineColor: WidgetStateProperty.map(<WidgetStateMapKey, Color>{
           WidgetState.selected: selectedTrackOutlineColor,
           WidgetState.any:      defaultTrackOutlineColor,
         }),
-        trackOutlineWidth: WidgetStateProperty.map(<WidgetStateMatch, double>{
+        trackOutlineWidth: WidgetStateProperty.map(<WidgetStateMapKey, double>{
           WidgetState.selected: selectedTrackOutlineWidth,
           WidgetState.any:      defaultTrackOutlineWidth,
         }),
         mouseCursor: const WidgetStatePropertyAll<MouseCursor>(mouseCursor),
         materialTapTargetSize: materialTapTargetSize,
-        overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMatch, Color>{
+        overlayColor: WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color>{
           WidgetState.focused: focusOverlayColor,
           WidgetState.hovered: hoverOverlayColor,
         }),
         splashRadius: splashRadius,
-        thumbIcon: WidgetStateProperty.map(<WidgetStateMatch, Icon>{
+        thumbIcon: WidgetStateProperty.map(<WidgetStateMapKey, Icon>{
           WidgetState.selected: icon1,
           WidgetState.any:      icon2,
         }),

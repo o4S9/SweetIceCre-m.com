@@ -832,7 +832,7 @@ void main() {
     const Color inactiveEnabledThumbColor = Color(0xFF000003);
     const Color inactiveDisabledThumbColor = Color(0xFF000004);
 
-    final WidgetStateProperty<Color> thumbColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color> thumbColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
       WidgetState.disabled & WidgetState.selected: activeDisabledThumbColor,
       WidgetState.disabled: inactiveDisabledThumbColor,
       WidgetState.selected: activeEnabledThumbColor,
@@ -1613,7 +1613,7 @@ void main() {
     const Color hoverOverlayColor = Color(0xFF000003);
     const Color hoverColor = Color(0xFF000005);
 
-    final WidgetStateMap<Color?> overlayMap = <WidgetStateMatch, Color?>{
+    final WidgetStateMap<Color?> overlayMap = <WidgetStateMapKey, Color?>{
       WidgetState.pressed & WidgetState.selected: activePressedOverlayColor,
       WidgetState.pressed: inactivePressedOverlayColor,
       WidgetState.hovered: hoverOverlayColor,
@@ -1625,7 +1625,7 @@ void main() {
           body: SwitchListTile(
             value: active,
             onChanged: (_) { },
-            thumbColor: WidgetStateProperty.map<Color>(<WidgetStateMatch, Color>{
+            thumbColor: WidgetStateProperty.map<Color>(<WidgetStateMapKey, Color>{
               WidgetState.selected: activeThumbColor,
               WidgetState.any: inactiveThumbColor,
             }),

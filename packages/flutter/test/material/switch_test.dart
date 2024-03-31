@@ -3750,7 +3750,7 @@ void main() {
       const Color hoveredTrackOutlineColor = Color(0xFF000001);
       const Color focusedTrackOutlineColor = Color(0xFF000002);
 
-      final WidgetStateProperty<Color> trackOutlineColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
+      final WidgetStateProperty<Color> trackOutlineColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
         WidgetState.hovered: hoveredTrackOutlineColor,
         WidgetState.focused: focusedTrackOutlineColor,
         WidgetState.any:     Colors.transparent,

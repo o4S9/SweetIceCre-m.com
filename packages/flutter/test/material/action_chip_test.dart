@@ -337,7 +337,7 @@ void main() {
   testWidgets('ActionChip.color resolves material states with WidgetStateMap', (WidgetTester tester) async {
     const Color disabledColor = Color(0xff00ff00);
     const Color backgroundColor = Color(0xff0000ff);
-    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMatch, Color>{
+    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMapKey, Color>{
       WidgetState.disabled: disabledColor,
       WidgetState.any: backgroundColor,
     });
