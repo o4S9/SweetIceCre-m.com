@@ -21,19 +21,20 @@ void main() {
   });
 
   test('WidgetStateProperty.map()', () {
-    final WidgetStateProperty<WidgetState?> value = WidgetStateProperty.map<WidgetState?>(
-      <WidgetStateMapKey, WidgetState?>{
-        WidgetState.hovered | WidgetState.focused | WidgetState.pressed: WidgetState.selected,
-        ~WidgetState.disabled: WidgetState.focused,
+    final WidgetStateMapKey active = WidgetState.hovered | WidgetState.focused | WidgetState.pressed;
+    final WidgetStateProperty<String?> value = WidgetStateProperty.map<String?>(
+      <WidgetStateMapKey, String?>{
+        active & WidgetState.error: 'active error',
+        ~(WidgetState.dragged | WidgetState.selected) & ~active: 'this is boring',
+        WidgetState.disabled | WidgetState.error: 'kinda sus',
+        active: 'active',
       },
     );
-    expect(value.resolve(<WidgetState>{WidgetState.hovered}), WidgetState.selected);
-    expect(value.resolve(<WidgetState>{WidgetState.focused}), WidgetState.selected);
-    expect(value.resolve(<WidgetState>{WidgetState.pressed}), WidgetState.selected);
-    expect(value.resolve(<WidgetState>{WidgetState.dragged}),  WidgetState.focused);
-    expect(value.resolve(<WidgetState>{WidgetState.selected}), WidgetState.focused);
-    expect(value.resolve(<WidgetState>{WidgetState.error}),    WidgetState.focused);
-    expect(value.resolve(<WidgetState>{WidgetState.disabled}), null);
+    expect(value.resolve(<WidgetState>{WidgetState.focused, WidgetState.error}), 'active error');
+    expect(value.resolve(<WidgetState>{WidgetState.scrolledUnder}), 'this is boring');
+    expect(value.resolve(<WidgetState>{WidgetState.disabled}), 'kinda sus');
+    expect(value.resolve(<WidgetState>{WidgetState.hovered}), 'active');
+    expect(value.resolve(<WidgetState>{WidgetState.dragged}),  null);
   });
 
   test('WidgetStateProperty.all()', () {
