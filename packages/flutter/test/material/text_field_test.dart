@@ -6933,39 +6933,6 @@ void main() {
     expect(editableText.style.color, Colors.blue);
   });
 
-  testWidgets('Provided style correctly resolves for WidgetStateTextStyle.map', (WidgetTester tester) async {
-    final TextEditingController controller = _textEditingController(
-      text: 'Atwater Peel Sherbrooke Bonaventure',
-    );
-
-    final ThemeData theme = ThemeData.light(useMaterial3: true);
-
-    Widget buildFrame(bool enabled) {
-      return MaterialApp(
-        theme: theme,
-        home: Material(
-          child: Center(
-            child: TextField(
-              controller: controller,
-              enabled: enabled,
-              style: const WidgetStateTextStyle.map(<WidgetStateMapKey, TextStyle>{
-                WidgetState.disabled: TextStyle(color: Colors.red),
-                WidgetState.any:      TextStyle(color: Colors.blue),
-              }),
-            ),
-          ),
-        ),
-      );
-    }
-
-    await tester.pumpWidget(buildFrame(false));
-    EditableText editableText = tester.widget(find.byType(EditableText));
-    expect(editableText.style.color, Colors.red);
-    await tester.pumpWidget(buildFrame(true));
-    editableText = tester.widget(find.byType(EditableText));
-    expect(editableText.style.color, Colors.blue);
-  });
-
   testWidgets('currentValueLength/maxValueLength are in the tree', (WidgetTester tester) async {
     final SemanticsTester semantics = SemanticsTester(tester);
     final TextEditingController controller = _textEditingController();

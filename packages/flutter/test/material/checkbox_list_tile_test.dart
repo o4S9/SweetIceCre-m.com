@@ -132,38 +132,6 @@ void main() {
     expect(getCheckboxListTileRenderer(), paints..path(color: const Color(0xFFFFFFFF)));
   });
 
-  testWidgets('CheckboxListTile activeColor test (with WidgetStateProperty.map)', (WidgetTester tester) async {
-    Widget buildFrame(Color? themeColor, Color? activeColor) {
-      return wrap(
-        child: Theme(
-          data: ThemeData(
-            checkboxTheme: CheckboxThemeData(
-              fillColor: WidgetStateProperty.map<Color?>(<WidgetStateMapKey, Color?>{
-                WidgetState.selected: themeColor,
-              }),
-            ),
-          ),
-          child: CheckboxListTile(
-            value: true,
-            activeColor: activeColor,
-            onChanged: (bool? value) {},
-          ),
-        ),
-      );
-    }
-    RenderBox getCheckboxListTileRenderer() {
-      return tester.renderObject<RenderBox>(find.byType(CheckboxListTile));
-    }
-
-    await tester.pumpWidget(buildFrame(const Color(0xFF000000), null));
-    await tester.pumpAndSettle();
-    expect(getCheckboxListTileRenderer(), paints..path(color: const Color(0xFF000000)));
-
-    await tester.pumpWidget(buildFrame(const Color(0xFF000000), const Color(0xFFFFFFFF)));
-    await tester.pumpAndSettle();
-    expect(getCheckboxListTileRenderer(), paints..path(color: const Color(0xFFFFFFFF)));
-  });
-
   testWidgets('CheckboxListTile can autofocus unless disabled.', (WidgetTester tester) async {
     final GlobalKey childKey = GlobalKey();
 

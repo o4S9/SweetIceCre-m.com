@@ -334,62 +334,6 @@ void main() {
     );
   });
 
-  testWidgets('ActionChip.color resolves material states with WidgetStateMap', (WidgetTester tester) async {
-    const Color disabledColor = Color(0xff00ff00);
-    const Color backgroundColor = Color(0xff0000ff);
-    final WidgetStateProperty<Color?> color = WidgetStateProperty.map(<WidgetStateMapKey, Color>{
-      WidgetState.disabled: disabledColor,
-      WidgetState.any: backgroundColor,
-    });
-    Widget buildApp({ required bool enabled, required bool selected }) {
-      return wrapForChip(
-        child: Column(
-          children: <Widget>[
-            ActionChip(
-              onPressed: enabled ? () { } : null,
-              color: color,
-              label: const Text('ActionChip'),
-            ),
-            ActionChip.elevated(
-              onPressed: enabled ? () { } : null,
-              color: color,
-              label: const Text('ActionChip.elevated'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Test enabled state.
-    await tester.pumpWidget(buildApp(enabled: true, selected: false));
-
-    // Enabled ActionChip should have the provided backgroundColor.
-    expect(
-      getMaterialBox(tester, find.byType(RawChip).first),
-      paints..rrect(color: backgroundColor),
-    );
-    // Enabled elevated ActionChip should have the provided backgroundColor.
-    expect(
-      getMaterialBox(tester, find.byType(RawChip).last),
-      paints..rrect(color: backgroundColor),
-    );
-
-    // Test disabled state.
-    await tester.pumpWidget(buildApp(enabled: false, selected: false));
-    await tester.pumpAndSettle();
-
-    // Disabled ActionChip should have the provided disabledColor.
-    expect(
-      getMaterialBox(tester, find.byType(RawChip).first),
-      paints..rrect(color: disabledColor),
-    );
-    // Disabled elevated ActionChip should have the provided disabledColor.
-    expect(
-      getMaterialBox(tester, find.byType(RawChip).last),
-      paints..rrect(color: disabledColor),
-    );
-  });
-
   testWidgets('ActionChip uses provided state color properties', (WidgetTester tester) async {
     const Color disabledColor = Color(0xff00ff00);
     const Color backgroundColor = Color(0xff0000ff);

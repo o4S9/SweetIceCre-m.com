@@ -502,68 +502,6 @@ void main() {
     skip: isBrowser, // https://github.com/flutter/flutter/issues/44115
   );
 
-  testWidgets('OutlinedButton with colored theme meets a11y contrast guidelines (WidgetStateMap)', (WidgetTester tester) async {
-    final FocusNode focusNode = FocusNode();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData.from(colorScheme: ColorScheme.fromSwatch()),
-        home: Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: OutlinedButtonTheme(
-              data: OutlinedButtonThemeData(
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.map<Color>(<WidgetStateMapKey, Color>{
-                    MaterialState.pressed | MaterialState.hovered | MaterialState.focused: Colors.blue[900]!,
-                    WidgetState.any: Colors.blue[800]!,
-                  }),
-                ),
-              ),
-              child: Builder(
-                builder: (BuildContext context) {
-                  return OutlinedButton(
-                    onPressed: () {},
-                    focusNode: focusNode,
-                    child: const Text('OutlinedButton'),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    // Default, not disabled.
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
-
-    // Focused.
-    focusNode.requestFocus();
-    await tester.pumpAndSettle();
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
-
-    // Hovered.
-    final Offset center = tester.getCenter(find.byType(OutlinedButton));
-    final TestGesture gesture = await tester.createGesture(
-      kind: PointerDeviceKind.mouse,
-    );
-    await gesture.addPointer();
-    await gesture.moveTo(center);
-    await tester.pumpAndSettle();
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
-
-    // Highlighted (pressed).
-    await gesture.down(center);
-    await tester.pump(); // Start the splash and highlight animations.
-    await tester.pump(const Duration(milliseconds: 800)); // Wait for splash and highlight to be well under way.
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
-
-    focusNode.dispose();
-  },
-    skip: isBrowser, // https://github.com/flutter/flutter/issues/44115
-  );
-
   testWidgets('OutlinedButton uses stateful color for text color in different states', (WidgetTester tester) async {
     final FocusNode focusNode = FocusNode();
 

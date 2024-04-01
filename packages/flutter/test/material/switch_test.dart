@@ -3744,61 +3744,6 @@ void main() {
       focusNode.dispose();
     });
 
-    testWidgets('Switch track outline color resolves in hovered/focused states using WidgetStateMap', (WidgetTester tester) async {
-      final FocusNode focusNode = FocusNode(debugLabel: 'Switch');
-      tester.binding.focusManager.highlightStrategy = FocusHighlightStrategy.alwaysTraditional;
-      const Color hoveredTrackOutlineColor = Color(0xFF000001);
-      const Color focusedTrackOutlineColor = Color(0xFF000002);
-
-      final WidgetStateProperty<Color> trackOutlineColor = WidgetStateColor.map(<WidgetStateMapKey, Color>{
-        WidgetState.hovered: hoveredTrackOutlineColor,
-        WidgetState.focused: focusedTrackOutlineColor,
-        WidgetState.any:     Colors.transparent,
-      });
-
-      Widget buildSwitch() {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: Material(
-            child: Center(
-              child: Switch(
-                focusNode: focusNode,
-                autofocus: true,
-                value: true,
-                trackOutlineColor: trackOutlineColor,
-                onChanged: (_) { },
-              ),
-            ),
-          ),
-        );
-      }
-
-      await tester.pumpWidget(buildSwitch());
-      await tester.pumpAndSettle();
-      expect(focusNode.hasPrimaryFocus, isTrue);
-      expect(
-        Material.of(tester.element(find.byType(Switch))),
-        paints..rrect(style: PaintingStyle.fill)
-          ..rrect(color: focusedTrackOutlineColor, style: PaintingStyle.stroke),
-        reason: 'Active enabled switch track outline should match this color',
-      );
-
-      // Start hovering
-      final TestGesture gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      await gesture.addPointer();
-      await gesture.moveTo(tester.getCenter(find.byType(Switch)));
-      await tester.pumpAndSettle();
-
-      expect(
-        Material.of(tester.element(find.byType(Switch))),
-        paints..rrect(style: PaintingStyle.fill)
-          ..rrect(color: hoveredTrackOutlineColor, style: PaintingStyle.stroke),
-        reason: 'Active enabled switch track outline should match this color',
-      );
-
-      focusNode.dispose();
-    });
-
     testWidgets('Track outline width resolves in active/enabled states', (WidgetTester tester) async {
       const double activeEnabledTrackOutlineWidth = 1.0;
       const double activeDisabledTrackOutlineWidth = 2.0;

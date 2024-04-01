@@ -628,6 +628,17 @@ class _WidgetTextStyleMapper extends WidgetStateTextStyle {
 ///    `WidgetStateProperty`.
 /// {@macro flutter.widgets.WidgetStateProperty.implementations}
 abstract class WidgetStateProperty<T> {
+  /// This abstract const constructor enables subclasses to provide
+  /// const constructors so that they can be used in const expressions.
+  const WidgetStateProperty();
+
+  /// Convenience method for creating a [WidgetStateProperty] from a
+  /// [WidgetPropertyResolver] function alone.
+  static WidgetStateProperty<T> resolveWith<T>(WidgetPropertyResolver<T> callback) => _WidgetStatePropertyWith<T>(callback);
+
+  /// Convenience method for creating a [WidgetStateProperty] from a [WidgetStateMap].
+  static WidgetStateProperty<T> map<T>(WidgetStateMap<T> map) => _WidgetStateMapper<T>(map);
+
   /// Returns a value of type `T` that depends on [states].
   ///
   /// Widgets like [TextButton] and [ElevatedButton] apply this method to their

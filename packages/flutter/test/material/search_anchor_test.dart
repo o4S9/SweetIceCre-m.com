@@ -478,57 +478,6 @@ void main() {
     expect(material.elevation, focusedElevation);
   });
 
-  testWidgets('SearchBar respects elevation from WidgetStateProperty.map()', (WidgetTester tester) async {
-    const double pressedElevation = 0.0;
-    const double hoveredElevation = 1.0;
-    const double focusedElevation = 2.0;
-    const double defaultElevation = 3.0;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Center(
-          child: Material(
-            child: SearchBar(
-              elevation: WidgetStateProperty.map<double>(<WidgetStateMapKey, double>{
-                WidgetState.pressed: pressedElevation,
-                WidgetState.hovered: hoveredElevation,
-                WidgetState.focused: focusedElevation,
-                WidgetState.any:     defaultElevation,
-              }),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final Finder searchBarMaterial = find.descendant(
-      of: find.byType(SearchBar),
-      matching: find.byType(Material),
-    );
-    Material material = tester.widget<Material>(searchBarMaterial);
-
-    // On hovered.
-    final TestGesture gesture = await _pointGestureToSearchBar(tester);
-    await tester.pump();
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.elevation, hoveredElevation);
-
-    // On pressed.
-    await gesture.down(tester.getCenter(find.byType(SearchBar)));
-    await tester.pumpAndSettle();
-
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.elevation, pressedElevation);
-
-    // On focused.
-    await gesture.up();
-    await tester.pump();
-    // Remove the pointer so we are no longer hovering.
-    await gesture.removePointer();
-    await tester.pump();
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.elevation, focusedElevation);
-  });
-
   testWidgets('SearchBar respects backgroundColor property', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -738,68 +687,6 @@ void main() {
             child: SearchBar(
               side: MaterialStateProperty.resolveWith<BorderSide>(getSide),
               shape: MaterialStateProperty.resolveWith<OutlinedBorder>(getShape),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    final Finder searchBarMaterial = find.descendant(
-      of: find.byType(SearchBar),
-      matching: find.byType(Material),
-    );
-    Material material = tester.widget<Material>(searchBarMaterial);
-
-    // On hovered.
-    final TestGesture gesture = await _pointGestureToSearchBar(tester);
-    await tester.pump();
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.shape, hoveredShape.copyWith(side: hoveredSide));
-
-    // On pressed.
-    await gesture.down(tester.getCenter(find.byType(SearchBar)));
-    await tester.pumpAndSettle();
-
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.shape, pressedShape.copyWith(side: pressedSide));
-
-    // On focused.
-    await gesture.up();
-    await tester.pump();
-    // Remove the pointer so we are no longer hovering.
-    await gesture.removePointer();
-    await tester.pump();
-    material = tester.widget<Material>(searchBarMaterial);
-    expect(material.shape, focusedShape.copyWith(side: focusedSide));
-  });
-
-  testWidgets('SearchBar respects WidgetStateMap side and shape properties', (WidgetTester tester) async {
-    const BorderSide pressedSide = BorderSide(width: 2.0);
-    const BorderSide hoveredSide = BorderSide(width: 3.0);
-    const BorderSide focusedSide = BorderSide(width: 4.0);
-    const BorderSide defaultSide = BorderSide(width: 5.0);
-
-    const OutlinedBorder pressedShape = RoundedRectangleBorder();
-    const OutlinedBorder hoveredShape = ContinuousRectangleBorder();
-    const OutlinedBorder focusedShape = CircleBorder();
-    const OutlinedBorder defaultShape = StadiumBorder();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Center(
-          child: Material(
-            child: SearchBar(
-              side: WidgetStateProperty.map<BorderSide>(<WidgetStateMapKey, BorderSide>{
-                WidgetState.pressed: pressedSide,
-                WidgetState.hovered: hoveredSide,
-                WidgetState.focused: focusedSide,
-                WidgetState.any:     defaultSide,
-              }),
-              shape: WidgetStateProperty.map<OutlinedBorder>(<WidgetStateMapKey, OutlinedBorder>{
-                WidgetState.pressed: pressedShape,
-                WidgetState.hovered: hoveredShape,
-                WidgetState.focused: focusedShape,
-                WidgetState.any:     defaultShape,
-              }),
             ),
           ),
         ),
