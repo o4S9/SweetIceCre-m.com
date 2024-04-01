@@ -25,8 +25,8 @@ void main() {
     final WidgetStateProperty<String?> value = WidgetStateProperty.map<String?>(
       <WidgetStateMapKey, String?>{
         active & WidgetState.error: 'active error',
-        ~(WidgetState.dragged | WidgetState.selected) & ~active: 'this is boring',
         WidgetState.disabled | WidgetState.error: 'kinda sus',
+        ~(WidgetState.dragged | WidgetState.selected) & ~active: 'this is boring',
         active: 'active',
       },
     );
