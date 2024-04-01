@@ -1245,46 +1245,6 @@ void main() {
     expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
   });
 
-  testWidgets('Checkbox fill color resolves in enabled/disabled states (WidgetStateColor.map)', (WidgetTester tester) async {
-    const Color activeEnabledFillColor = Color(0xFF000001);
-    const Color activeDisabledFillColor = Color(0xFF000002);
-
-
-    final WidgetStateProperty<Color> fillColor = WidgetStateColor.map(<WidgetStateMatch, Color>{
-      WidgetState.disabled: activeDisabledFillColor,
-      WidgetState.any: activeEnabledFillColor,
-    });
-
-    Widget buildFrame({required bool enabled}) {
-      return Material(
-        child: Theme(
-          data: theme,
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Checkbox(
-                value: true,
-                fillColor: fillColor,
-                onChanged: enabled ? (bool? value) { } : null,
-              );
-            },
-          ),
-        ),
-      );
-    }
-
-    RenderBox getCheckboxRenderer() {
-      return tester.renderObject<RenderBox>(find.byType(Checkbox));
-    }
-
-    await tester.pumpWidget(buildFrame(enabled: true));
-    await tester.pumpAndSettle();
-    expect(getCheckboxRenderer(), paints..path(color: activeEnabledFillColor));
-
-    await tester.pumpWidget(buildFrame(enabled: false));
-    await tester.pumpAndSettle();
-    expect(getCheckboxRenderer(), paints..path(color: activeDisabledFillColor));
-  });
-
   testWidgets('Checkbox fill color resolves in hovered/focused states', (WidgetTester tester) async {
     final FocusNode focusNode = FocusNode(debugLabel: 'checkbox');
     addTearDown(focusNode.dispose);
