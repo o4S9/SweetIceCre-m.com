@@ -19,26 +19,25 @@ import 'common.dart';
 /// Tests should write any output files to this directory. Defaults to the path
 /// set in the FLUTTER_TEST_OUTPUTS_DIR environment variable, or `build` if
 /// unset.
-String testOutputsDirectory =
-    Platform.environment['FLUTTER_TEST_OUTPUTS_DIR'] ?? 'build';
+//final String defaultTestOutputDirectory = fs.systemTempDirectory.createTempSync('build').path;
 
 /// The callback type to handle [Response.data] after the test
 /// succeeds.
-typedef ResponseDataCallback = FutureOr<void> Function(Map<String, dynamic>?);
+typedef ResponseDataCallback = FutureOr<void> Function(Map<String, dynamic>?, {String testOutputFilename, String testOutputDirectory});
 
 /// Writes a json-serializable data to
-/// [testOutputsDirectory]/`testOutputFilename.json`.
+/// [testOutputDirectory]/`testOutputFilename.json`.
 ///
 /// This is the default `responseDataCallback` in [integrationDriver].
 Future<void> writeResponseData(
   Map<String, dynamic>? data, {
   String testOutputFilename = 'integration_response_data',
-  String? destinationDirectory,
+  String testOutputDirectory = '',
 }) async {
-  destinationDirectory ??= testOutputsDirectory;
-  await fs.directory(destinationDirectory).create(recursive: true);
+  testOutputDirectory = testOutputDirectory.isEmpty? defaultTestOutputDirectory : testOutputDirectory;
+  await fs.directory(testOutputDirectory).create(recursive: true);
   final File file = fs.file(path.join(
-    destinationDirectory,
+    testOutputDirectory,
     '$testOutputFilename.json',
   ));
   final String resultString = _encodeJson(data, true);
@@ -88,6 +87,7 @@ Future<void> integrationDriver({
   ScreenshotCallback? onScreenshot,
   ResponseDataCallback? responseDataCallback = writeResponseData,
   bool writeResponseOnFailure = false,
+  String testOutputDirectory = '',
 }) async {
   driver ??= await FlutterDriver.connect();
   // Test states that it's waiting on web driver commands.
@@ -175,13 +175,13 @@ Future<void> integrationDriver({
   if (response.allTestsPassed) {
     print('All tests passed.');
     if (responseDataCallback != null) {
-      await responseDataCallback(response.data);
+      await responseDataCallback(response.data, testOutputDirectory: testOutputDirectory);
     }
     exit(0);
   } else {
     print('Failure Details:\n${response.formattedFailureDetails}');
     if (responseDataCallback != null && writeResponseOnFailure) {
-      await responseDataCallback(response.data);
+      await responseDataCallback(response.data, testOutputDirectory: testOutputDirectory);
     }
     exit(1);
   }

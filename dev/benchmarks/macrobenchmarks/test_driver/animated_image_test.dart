@@ -5,7 +5,11 @@
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart' hide TypeMatcher, isInstanceOf;
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
+  final String testOutputDirectory = getTestOutputDirectory(args);
+
+  //throw FormatException('Expected at least 1 section $args ${argResults["test-output-directory"]}');
+
   const String fileName = 'animated_image';
 
   test('Animate for 250 frames', () async {
@@ -17,7 +21,7 @@ Future<void> main() async {
       await driver.requestData('waitForAnimation');
     });
     final TimelineSummary summary = TimelineSummary.summarize(timeline);
-    await summary.writeTimelineToFile(fileName, pretty: true);
+    await summary.writeTimelineToFile(fileName, pretty: true, destinationDirectory: testOutputDirectory);
 
     await driver.close();
   }, timeout: Timeout.none);
