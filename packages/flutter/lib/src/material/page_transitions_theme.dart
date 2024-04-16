@@ -77,30 +77,6 @@ class _OpenUpwardsPageTransition extends StatelessWidget {
   // Used by all of the transition animations.
   static const Curve _transitionCurve = Cubic(0.20, 0.00, 0.00, 1.00);
 
-  static Widget delegateTransition(BuildContext context, Widget? child, Animation<double> secondaryAnimation) {
-    final Animation<Offset> secondaryTranslationAnimation = _secondaryTranslationTween.animate(
-      CurvedAnimation(
-        parent: secondaryAnimation,
-        curve: _transitionCurve,
-        reverseCurve: _transitionCurve.flipped,
-      ),
-    );
-
-    return AnimatedBuilder(
-      animation: secondaryAnimation,
-      child: FractionalTranslation(
-        translation: secondaryTranslationAnimation.value,
-        child: child,
-      ),
-      builder: (BuildContext context, Widget? child) {
-        return FractionalTranslation(
-          translation: secondaryTranslationAnimation.value,
-          child: child,
-        );
-      },
-    );
-  }
-
   final Animation<double> animation;
   final Animation<double> secondaryAnimation;
   final Widget child;
@@ -152,26 +128,19 @@ class _OpenUpwardsPageTransition extends StatelessWidget {
               ),
             );
           },
-          child: DelegatedTransition(
-            context: context,
+          child: AnimatedBuilder(
             animation: secondaryAnimation,
+            child: FractionalTranslation(
+              translation: primaryTranslationAnimation.value,
+              child: child,
+            ),
             builder: (BuildContext context, Widget? child) {
-              return AnimatedBuilder(
-                animation: secondaryAnimation,
-                child: FractionalTranslation(
-                  translation: primaryTranslationAnimation.value,
-                  child: child,
-                ),
-                builder: (BuildContext context, Widget? child) {
-                  return FractionalTranslation(
-                    translation: secondaryTranslationAnimation.value,
-                    child: child,
-                  );
-                },
+              return FractionalTranslation(
+                translation: secondaryTranslationAnimation.value,
+                child: child,
               );
             },
-            child: child,
-          )
+          ),
         );
       },
     );
@@ -621,11 +590,6 @@ class OpenUpwardsPageTransitionsBuilder extends PageTransitionsBuilder {
   /// Constructs a page transition animation that matches the transition used on
   /// Android P.
   const OpenUpwardsPageTransitionsBuilder();
-
-  /// Delegate animation
-  static Widget delegateTransition(BuildContext context, Widget? child, Animation<double> secondaryAnimation) {
-    return _OpenUpwardsPageTransition.delegateTransition(context, child, secondaryAnimation);
-  }
 
   @override
   Widget buildTransitions<T>(
