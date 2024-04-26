@@ -68,7 +68,7 @@ const Map<MaterialType, BorderRadius?> kMaterialEdges = <MaterialType, BorderRad
 /// An interface for creating [InkSplash]s and [InkHighlight]s on a [Material].
 ///
 /// Typically obtained via [Material.of].
-abstract interface class MaterialInkController implements RenderBox {
+abstract class MaterialInkController {
   /// The color of the material.
   Color? get color;
 
@@ -82,6 +82,9 @@ abstract interface class MaterialInkController implements RenderBox {
   ///
   /// The ink feature will paint as part of this controller.
   void addInkFeature(InkFeature feature);
+
+  /// Notifies the controller that one of its ink features needs to repaint.
+  void markNeedsPaint();
 }
 
 /// A piece of material.
@@ -355,7 +358,7 @@ class Material extends StatefulWidget {
   /// * [Material.of], which is similar to this method, but asserts if
   ///   no [Material] ancestor is found.
   static MaterialInkController? maybeOf(BuildContext context) {
-    return LookupBoundary.findAncestorRenderObjectOfType<MaterialInkController>(context);
+    return LookupBoundary.findAncestorRenderObjectOfType<_RenderInkFeatures>(context);
   }
 
   /// The ink controller from the closest instance of [Material] that encloses
