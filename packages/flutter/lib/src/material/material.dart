@@ -516,10 +516,7 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
       return ClipPath(
         clipper: ShapeBorderClipper(shape: shape, textDirection: textDirection),
         clipBehavior: widget.clipBehavior,
-        child: CustomPaint(
-          foregroundPainter: _ShapeBorderPainter(shape, textDirection),
-          child: contents,
-        ),
+        child: _ShapeBorderPaint(shape: shape, child: contents),
       );
     }
 
@@ -908,23 +905,42 @@ class _MaterialInteriorState extends AnimatedWidgetBaseState<_MaterialInterior> 
       : ElevationOverlay.applyOverlay(context, widget.color, elevation);
     final Color shadowColor = _shadowColor!.evaluate(animation)!;
     final double modelElevation = shadowColor.alpha > 0 ? elevation : 0;
-    final TextDirection? textDirection = Directionality.maybeOf(context);
-    final _ShapeBorderPainter painter = _ShapeBorderPainter(shape, textDirection);
 
     return PhysicalShape(
       clipper: ShapeBorderClipper(
         shape: shape,
-        textDirection: textDirection,
+        textDirection: Directionality.maybeOf(context),
       ),
       clipBehavior: widget.clipBehavior,
       elevation: modelElevation,
       color: color,
       shadowColor: shadowColor,
-      child: CustomPaint(
-        painter: widget.borderOnForeground ? null : painter,
-        foregroundPainter: widget.borderOnForeground ? painter : null,
+      child: _ShapeBorderPaint(
+        shape: shape,
+        borderOnForeground: widget.borderOnForeground,
         child: widget.child,
       ),
+    );
+  }
+}
+
+class _ShapeBorderPaint extends StatelessWidget {
+  const _ShapeBorderPaint({
+    required this.child,
+    required this.shape,
+    this.borderOnForeground = true,
+  });
+
+  final Widget child;
+  final ShapeBorder shape;
+  final bool borderOnForeground;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: borderOnForeground ? null : _ShapeBorderPainter(shape, Directionality.maybeOf(context)),
+      foregroundPainter: borderOnForeground ? _ShapeBorderPainter(shape, Directionality.maybeOf(context)) : null,
+      child: child,
     );
   }
 }
