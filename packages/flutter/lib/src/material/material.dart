@@ -439,7 +439,7 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
       MaterialType.card => theme.cardColor,
       MaterialType.button || MaterialType.circle || MaterialType.transparency => null,
     };
-    final Color shadowColor = widget.shadowColor
+    final Color modelShadowColor = widget.shadowColor
         ?? (theme.useMaterial3 ? theme.colorScheme.shadow : theme.shadowColor);
     final bool transparent = widget.type == MaterialType.transparency;
     assert(
@@ -498,7 +498,7 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
         clipBehavior: widget.clipBehavior,
         elevation: widget.elevation,
         color: color,
-        shadowColor: shadowColor,
+        shadowColor: modelShadowColor,
         animateColor: false,
         child: contents,
       );
@@ -531,7 +531,7 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
       clipBehavior: widget.clipBehavior,
       elevation: widget.elevation,
       color: backgroundColor!,
-      shadowColor: shadowColor,
+      shadowColor: modelShadowColor,
       surfaceTintColor: widget.surfaceTintColor,
       child: contents,
     );
