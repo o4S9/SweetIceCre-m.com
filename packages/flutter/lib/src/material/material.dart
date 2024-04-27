@@ -439,6 +439,8 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
       MaterialType.card => theme.cardColor,
       MaterialType.button || MaterialType.circle || MaterialType.transparency => null,
     };
+    final Color shadowColor = widget.shadowColor
+        ?? (theme.useMaterial3 ? theme.colorScheme.shadow : theme.shadowColor);
     final bool transparent = widget.type == MaterialType.transparency;
     assert(
       backgroundColor != null || transparent,
@@ -447,11 +449,6 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
       'in the theme (ex. canvasColor != null if type is set to '
       'MaterialType.canvas)',
     );
-    final Color shadowColor = widget.shadowColor
-        ?? (theme.useMaterial3 ? theme.colorScheme.shadow : theme.shadowColor);
-    late final Color color = theme.useMaterial3
-        ? ElevationOverlay.applySurfaceTint(backgroundColor!, widget.surfaceTintColor, widget.elevation)
-        : ElevationOverlay.applyOverlay(context, backgroundColor!, widget.elevation);
 
     Widget? contents = widget.child;
     if (contents != null) {
@@ -490,6 +487,10 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
     // we choose not to as we want the change from the fast-path to the
     // slow-path to be noticeable in the construction site of Material.
     if (widget.type == MaterialType.canvas && shape == null) {
+      final Color color = theme.useMaterial3
+        ? ElevationOverlay.applySurfaceTint(backgroundColor!, widget.surfaceTintColor, widget.elevation)
+        : ElevationOverlay.applyOverlay(context, backgroundColor!, widget.elevation);
+
       return AnimatedPhysicalModel(
         curve: Curves.fastOutSlowIn,
         duration: widget.animationDuration,
@@ -512,9 +513,11 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
     };
 
     if (transparent) {
-      final TextDirection? textDirection = Directionality.maybeOf(context);
       return ClipPath(
-        clipper: ShapeBorderClipper(shape: shape, textDirection: textDirection),
+        clipper: ShapeBorderClipper(
+          shape: shape,
+          textDirection: Directionality.maybeOf(context),
+        ),
         clipBehavior: widget.clipBehavior,
         child: _ShapeBorderPaint(shape: shape, child: contents),
       );
@@ -904,7 +907,6 @@ class _MaterialInteriorState extends AnimatedWidgetBaseState<_MaterialInterior> 
       ? ElevationOverlay.applySurfaceTint(widget.color, _surfaceTintColor?.evaluate(animation), elevation)
       : ElevationOverlay.applyOverlay(context, widget.color, elevation);
     final Color shadowColor = _shadowColor!.evaluate(animation)!;
-    final double modelElevation = shadowColor.alpha > 0 ? elevation : 0;
 
     return PhysicalShape(
       clipper: ShapeBorderClipper(
@@ -912,7 +914,7 @@ class _MaterialInteriorState extends AnimatedWidgetBaseState<_MaterialInterior> 
         textDirection: Directionality.maybeOf(context),
       ),
       clipBehavior: widget.clipBehavior,
-      elevation: modelElevation,
+      elevation: elevation,
       color: color,
       shadowColor: shadowColor,
       child: _ShapeBorderPaint(
