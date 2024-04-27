@@ -441,9 +441,8 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
     };
     final Color modelShadowColor = widget.shadowColor
         ?? (theme.useMaterial3 ? theme.colorScheme.shadow : theme.shadowColor);
-    final bool transparent = widget.type == MaterialType.transparency;
     assert(
-      backgroundColor != null || transparent,
+      backgroundColor != null || widget.type == MaterialType.transparency,
       'If Material type is not MaterialType.transparency, a color must '
       'either be passed in through the `color` property, or be defined '
       'in the theme (ex. canvasColor != null if type is set to '
@@ -512,7 +511,7 @@ class _MaterialState extends State<Material> with TickerProviderStateMixin {
         ),
     };
 
-    if (transparent) {
+    if (widget.type == MaterialType.transparency) {
       return ClipPath(
         clipper: ShapeBorderClipper(
           shape: shape,
