@@ -1887,33 +1887,26 @@ void main() {
                   children: <TestSemantics>[
                     TestSemantics(
                       id: 4,
+                      label: 'title',
+                      textDirection: TextDirection.ltr,
+                    ),
+                    TestSemantics(
+                      id: 5,
+                      flags: <SemanticsFlag>[SemanticsFlag.hasImplicitScrolling],
                       children: <TestSemantics>[
-                        // Title semantics does not merge into the semantics
-                        // node 4.
                         TestSemantics(
-                          id: 5,
-                          label: 'title',
+                          id: 6,
+                          label: 'content',
                           textDirection: TextDirection.ltr,
                         ),
                         TestSemantics(
-                          id: 6,
-                          flags: <SemanticsFlag>[SemanticsFlag.hasImplicitScrolling],
-                          children: <TestSemantics>[
-                            TestSemantics(
-                              id: 7,
-                              label: 'content',
-                              textDirection: TextDirection.ltr,
-                            ),
-                            TestSemantics(
-                              id: 8,
-                              flags: <SemanticsFlag>[
-                                SemanticsFlag.isButton,
-                                SemanticsFlag.hasEnabledState,
-                              ],
-                              label: 'action',
-                              textDirection: TextDirection.ltr,
-                            ),
+                          id: 7,
+                          flags: <SemanticsFlag>[
+                            SemanticsFlag.isButton,
+                            SemanticsFlag.hasEnabledState,
                           ],
+                          label: 'action',
+                          textDirection: TextDirection.ltr,
                         ),
                       ],
                     ),
