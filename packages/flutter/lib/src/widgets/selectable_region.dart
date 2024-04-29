@@ -216,6 +216,7 @@ class SelectableRegion extends StatefulWidget {
     required this.child,
     this.magnifierConfiguration = TextMagnifierConfiguration.disabled,
     this.onSelectionChanged,
+    this.copyInterceptor = CopyInterceptor.none,
   });
 
   /// The configuration for the magnifier used with selections in this region.
@@ -247,6 +248,14 @@ class SelectableRegion extends StatefulWidget {
 
   /// Called when the selected content changes.
   final ValueChanged<SelectedContent?>? onSelectionChanged;
+
+  /// {@template flutter.widgets.SelectableRegion.copyInterceptor}
+  /// Specifies how [Selectables] are serialized into a string when copied.
+  ///
+  /// Defaults to [CopyInterceptor.none], as a [SelectableRegion] cannot know
+  /// the structure of the [Selectable]s it contains.
+  /// {@endtemplate}
+  final CopyInterceptor copyInterceptor;
 
   /// Returns the [ContextMenuButtonItem]s representing the buttons in this
   /// platform's default selection menu.
@@ -344,7 +353,7 @@ class SelectableRegionState extends State<SelectableRegion> with TextSelectionDe
   final LayerLink _startHandleLayerLink = LayerLink();
   final LayerLink _endHandleLayerLink = LayerLink();
   final LayerLink _toolbarLayerLink = LayerLink();
-  final _SelectableRegionContainerDelegate _selectionDelegate = _SelectableRegionContainerDelegate();
+  late final _SelectableRegionContainerDelegate _selectionDelegate = _SelectableRegionContainerDelegate(copyInterceptor: widget.copyInterceptor);
   // there should only ever be one selectable, which is the SelectionContainer.
   Selectable? _selectable;
 
@@ -1594,6 +1603,8 @@ class _DirectionallyExtendCaretSelectionAction<T extends DirectionalCaretMovemen
 }
 
 class _SelectableRegionContainerDelegate extends MultiSelectableSelectionContainerDelegate {
+  _SelectableRegionContainerDelegate({required super.copyInterceptor});
+
   final Set<Selectable> _hasReceivedStartEvent = <Selectable>{};
   final Set<Selectable> _hasReceivedEndEvent = <Selectable>{};
 
@@ -1771,11 +1782,16 @@ class _SelectableRegionContainerDelegate extends MultiSelectableSelectionContain
 /// [Selectable]s that currently contain the selection edges.
 abstract class MultiSelectableSelectionContainerDelegate extends SelectionContainerDelegate with ChangeNotifier {
   /// Creates an instance of [MultiSelectableSelectionContainerDelegate].
-  MultiSelectableSelectionContainerDelegate() {
+  MultiSelectableSelectionContainerDelegate({
+     required this.copyInterceptor
+  }) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
+
+  /// Specifies how [Selectables] are serialized into a string when copied.
+  final CopyInterceptor copyInterceptor;
 
   /// Gets the list of [Selectable]s this delegate is managing.
   List<Selectable> selectables = <Selectable>[];
@@ -2220,13 +2236,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     if (selections.isEmpty) {
       return null;
     }
-    final StringBuffer buffer = StringBuffer();
-    for (final SelectedContent selection in selections) {
-      buffer.write(selection.plainText);
-    }
-    return SelectedContent(
-      plainText: buffer.toString(),
-    );
+    return SelectedContent(plainText: copyInterceptor.intercept(selections));
   }
 
   // Clears the selection on all selectables not in the range of
@@ -2668,3 +2678,27 @@ typedef SelectableRegionContextMenuBuilder = Widget Function(
   BuildContext context,
   SelectableRegionState selectableRegionState,
 );
+
+/// A wrapper around [SelectionContainer] which specifies a desired [copyInterceptor].
+class CopyInterceptContainer extends StatelessWidget {
+  /// Creates a [CopyInterceptContainer].
+  const CopyInterceptContainer({
+    super.key,
+    required this.copyInterceptor,
+    required this.child,
+  });
+
+  /// Specifies how [Selectables] are serialized into a string when copied.
+  final CopyInterceptor copyInterceptor;
+
+  /// The child widget this [CopyInterceptContainer] applies to.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SelectionContainer(
+      delegate: _SelectableRegionContainerDelegate(copyInterceptor: copyInterceptor),
+      child: child,
+    );
+  }
+}
