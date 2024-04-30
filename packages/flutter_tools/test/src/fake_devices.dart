@@ -119,9 +119,11 @@ class FakeDevice extends Device {
     PlatformType type = PlatformType.web,
     LaunchResult? launchResult,
     this.deviceLogReader,
+    bool supportsFlavors = false,
   }) : _isSupported = isSupported,
       _isSupportedForProject = isSupportedForProject,
       _launchResult = launchResult ?? LaunchResult.succeeded(),
+      _supportsFlavors = supportsFlavors,
       super(
         id,
         platformType: type,
@@ -131,6 +133,7 @@ class FakeDevice extends Device {
 
   final bool _isSupported;
   final bool _isSupportedForProject;
+  final bool _supportsFlavors;
   final LaunchResult _launchResult;
   DeviceLogReader? deviceLogReader;
 
@@ -173,6 +176,9 @@ class FakeDevice extends Device {
 
   @override
   bool isSupported() => _isSupported;
+
+  @override
+  bool get supportsFlavors => _supportsFlavors;
 
   @override
   bool isConnected;
@@ -263,6 +269,11 @@ class FakePollingDeviceDiscovery extends PollingDeviceDiscovery {
 
   @override
   List<String> wellKnownIds = <String>[];
+
+  List<String> diagnostics = <String>[];
+
+  @override
+  Future<List<String>> getDiagnostics() => Future<List<String>>.value(diagnostics);
 }
 
 /// A fake implementation of the [DeviceLogReader].

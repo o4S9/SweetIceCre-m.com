@@ -482,26 +482,20 @@ class _DatePickerDialogState extends State<DatePickerDialog> with RestorationMix
 
   Size _dialogSize(BuildContext context) {
     final bool useMaterial3 = Theme.of(context).useMaterial3;
+    final bool isCalendar = switch (_entryMode.value) {
+      DatePickerEntryMode.calendar || DatePickerEntryMode.calendarOnly => true,
+      DatePickerEntryMode.input || DatePickerEntryMode.inputOnly => false,
+    };
     final Orientation orientation = MediaQuery.orientationOf(context);
 
-    switch (_entryMode.value) {
-      case DatePickerEntryMode.calendar:
-      case DatePickerEntryMode.calendarOnly:
-        switch (orientation) {
-          case Orientation.portrait:
-            return useMaterial3 ? _calendarPortraitDialogSizeM3 : _calendarPortraitDialogSizeM2;
-          case Orientation.landscape:
-            return _calendarLandscapeDialogSize;
-        }
-      case DatePickerEntryMode.input:
-      case DatePickerEntryMode.inputOnly:
-        switch (orientation) {
-          case Orientation.portrait:
-            return useMaterial3 ? _inputPortraitDialogSizeM3 : _inputPortraitDialogSizeM2;
-          case Orientation.landscape:
-            return _inputLandscapeDialogSize;
-        }
-    }
+    return switch ((isCalendar, orientation)) {
+      (true,  Orientation.portrait) when useMaterial3 => _calendarPortraitDialogSizeM3,
+      (false, Orientation.portrait) when useMaterial3 => _inputPortraitDialogSizeM3,
+      (true,  Orientation.portrait)  => _calendarPortraitDialogSizeM2,
+      (false, Orientation.portrait)  => _inputPortraitDialogSizeM2,
+      (true,  Orientation.landscape) => _calendarLandscapeDialogSize,
+      (false, Orientation.landscape) => _inputLandscapeDialogSize,
+    };
   }
 
   static const Map<ShortcutActivator, Intent> _formShortcutMap = <ShortcutActivator, Intent>{
@@ -659,7 +653,9 @@ class _DatePickerDialogState extends State<DatePickerDialog> with RestorationMix
 
     // Constrain the textScaleFactor to the largest supported value to prevent
     // layout issues.
-    final double textScaleFactor = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: _kMaxTextScaleFactor).textScaleFactor;
+    // 14 is a common font size used to compute the effective text scale.
+    const double fontSizeToScale = 14.0;
+    final double textScaleFactor = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: _kMaxTextScaleFactor).scale(fontSizeToScale) / fontSizeToScale;
     final Size dialogSize = _dialogSize(context) * textScaleFactor;
     final DialogTheme dialogTheme = theme.dialogTheme;
     return Dialog(
@@ -841,11 +837,12 @@ class _DatePickerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DatePickerThemeData themeData = DatePickerTheme.of(context);
+    final ThemeData theme = Theme.of(context);
+    final DatePickerThemeData datePickerTheme = DatePickerTheme.of(context);
     final DatePickerThemeData defaults = DatePickerTheme.defaults(context);
-    final Color? backgroundColor = themeData.headerBackgroundColor ?? defaults.headerBackgroundColor;
-    final Color? foregroundColor = themeData.headerForegroundColor ?? defaults.headerForegroundColor;
-    final TextStyle? helpStyle = (themeData.headerHelpStyle ?? defaults.headerHelpStyle)?.copyWith(
+    final Color? backgroundColor = datePickerTheme.headerBackgroundColor ?? defaults.headerBackgroundColor;
+    final Color? foregroundColor = datePickerTheme.headerForegroundColor ?? defaults.headerForegroundColor;
+    final TextStyle? helpStyle = (datePickerTheme.headerHelpStyle ?? defaults.headerHelpStyle)?.copyWith(
       color: foregroundColor,
     );
 
@@ -865,64 +862,85 @@ class _DatePickerHeader extends StatelessWidget {
 
     switch (orientation) {
       case Orientation.portrait:
-        return SizedBox(
-          height: _datePickerHeaderPortraitHeight,
-          child: Material(
-            color: backgroundColor,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: 24,
-                end: 12,
-                bottom: 12,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(height: 16),
-                  help,
-                  const Flexible(child: SizedBox(height: 38)),
-                  Row(
-                    children: <Widget>[
-                      Expanded(child: title),
-                      if (entryModeButton != null)
-                        entryModeButton!,
-                    ],
-                  ),
-                ],
+        return Semantics(
+          container: true,
+          child: SizedBox(
+            height: _datePickerHeaderPortraitHeight,
+            child: Material(
+              color: backgroundColor,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: 24,
+                  end: 12,
+                  bottom: 12,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(height: 16),
+                    help,
+                    const Flexible(child: SizedBox(height: 38)),
+                    Row(
+                      children: <Widget>[
+                        Expanded(child: title),
+                        if (entryModeButton != null)
+                         Semantics(
+                          container: true,
+                          child: entryModeButton,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
         );
       case Orientation.landscape:
-        return SizedBox(
-          width: _datePickerHeaderLandscapeWidth,
-          child: Material(
-            color: backgroundColor,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: _headerPaddingLandscape,
-                  ),
-                  child: help,
-                ),
-                SizedBox(height: isShort ? 16 : 56),
-                Expanded(
-                  child: Padding(
+        return Semantics(
+          container: true,
+          child:SizedBox(
+            width: _datePickerHeaderLandscapeWidth,
+            child: Material(
+              color: backgroundColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(height: 16),
+                  Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: _headerPaddingLandscape,
                     ),
-                    child: title,
+                    child: help,
                   ),
-                ),
-                if (entryModeButton != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: entryModeButton,
+                  SizedBox(height: isShort ? 16 : 56),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: _headerPaddingLandscape,
+                      ),
+                      child: title,
+                    ),
                   ),
-              ],
+                  if (entryModeButton != null)
+                    Padding(
+                      padding: theme.useMaterial3
+                        // TODO(TahaTesser): This is an eye-balled M3 entry mode button padding
+                        // from https://m3.material.io/components/date-pickers/specs#c16c142b-4706-47f3-9400-3cde654b9aa8.
+                        // Update this value to use tokens when available.
+                        ? const EdgeInsetsDirectional.only(
+                            start: 8.0,
+                            end: 4.0,
+                            bottom: 6.0,
+                          )
+                        : const EdgeInsets.symmetric(horizontal: 4),
+                      child: Semantics(
+                        container: true,
+                        child: entryModeButton,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         );
@@ -1012,7 +1030,7 @@ class _DatePickerHeader extends StatelessWidget {
 ///
 /// {@macro flutter.widgets.RestorationManager}
 ///
-/// {@tool sample}
+/// {@tool dartpad}
 /// This sample demonstrates how to create a restorable Material date range picker.
 /// This is accomplished by enabling state restoration by specifying
 /// [MaterialApp.restorationScopeId] and using [Navigator.restorablePush] to
@@ -1652,7 +1670,7 @@ class _CalendarRangePickerDialog extends StatelessWidget {
           actionsIconTheme: iconTheme,
           elevation: useMaterial3 ? 0 : null,
           scrolledUnderElevation: useMaterial3 ? 0 : null,
-          backgroundColor: useMaterial3 ? headerBackground : null,
+          backgroundColor: headerBackground,
           leading: CloseButton(
             onPressed: onCancel,
           ),
@@ -1677,7 +1695,12 @@ class _CalendarRangePickerDialog extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(helpText, style: headlineHelpStyle),
+                      Text(
+                        helpText,
+                        style: headlineHelpStyle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 8),
                       Row(
                         children: <Widget>[
@@ -2746,25 +2769,20 @@ class _HighlightPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    final Rect rectLeft = Rect.fromLTWH(0, 0, size.width / 2, size.height);
-    final Rect rectRight = Rect.fromLTWH(size.width / 2, 0, size.width / 2, size.height);
+    final bool rtl = switch (textDirection) {
+      TextDirection.rtl || null => true,
+      TextDirection.ltr => false,
+    };
 
     switch (style) {
-      case _HighlightPainterStyle.highlightTrailing:
-        canvas.drawRect(
-          textDirection == TextDirection.ltr ? rectRight : rectLeft,
-          paint,
-        );
+      case _HighlightPainterStyle.highlightLeading when rtl:
+      case _HighlightPainterStyle.highlightTrailing when !rtl:
+        canvas.drawRect(Rect.fromLTWH(size.width / 2, 0, size.width / 2, size.height), paint);
       case _HighlightPainterStyle.highlightLeading:
-        canvas.drawRect(
-          textDirection == TextDirection.ltr ? rectLeft : rectRight,
-          paint,
-        );
+      case _HighlightPainterStyle.highlightTrailing:
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width / 2, size.height), paint);
       case _HighlightPainterStyle.highlightAll:
-        canvas.drawRect(
-          Rect.fromLTWH(0, 0, size.width, size.height),
-          paint,
-        );
+        canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
       case _HighlightPainterStyle.none:
         break;
     }
@@ -2874,7 +2892,9 @@ class _InputDateRangePickerDialog extends StatelessWidget {
       ),
     );
 
-    final double textScaleFactor = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: _kMaxTextScaleFactor).textScaleFactor;
+    // 14 is a common font size used to compute the effective text scale.
+    const double fontSizeToScale = 14.0;
+    final double textScaleFactor = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: _kMaxTextScaleFactor).scale(fontSizeToScale) / fontSizeToScale;
     final Size dialogSize = (useMaterial3 ? _inputPortraitDialogSizeM3 : _inputPortraitDialogSizeM2) * textScaleFactor;
     switch (orientation) {
       case Orientation.portrait:

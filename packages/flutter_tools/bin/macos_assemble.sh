@@ -131,6 +131,10 @@ BuildApp() {
     "--build-outputs=${build_outputs_path}"
     "--output=${BUILT_PRODUCTS_DIR}"
   )
+
+  if [[ -n "$FLAVOR" ]]; then
+    flutter_args+=("-dFlavor=${FLAVOR}")
+  fi
   if [[ -n "$PERFORMANCE_MEASUREMENT_FILE" ]]; then
     flutter_args+=("--performance-measurement-file=${PERFORMANCE_MEASUREMENT_FILE}")
   fi
@@ -140,9 +144,21 @@ BuildApp() {
   if [[ -n "$CODE_SIZE_DIRECTORY" ]]; then
     flutter_args+=("-dCodeSizeDirectory=${CODE_SIZE_DIRECTORY}")
   fi
-  flutter_args+=("${build_mode}_macos_bundle_flutter_assets")
+
+  # Run flutter assemble with the build mode specific target that was passed in.
+  # If no target was passed it, default to build mode specific
+  # macos_bundle_flutter_assets target.
+  if [[ -n "$1" ]]; then
+    flutter_args+=("${build_mode}$1")
+  else
+    flutter_args+=("${build_mode}_macos_bundle_flutter_assets")
+  fi
 
   RunCommand "${flutter_args[@]}"
+}
+
+PrepareFramework() {
+  BuildApp "_unpack_macos"
 }
 
 # Adds the App.framework as an embedded binary, the flutter_assets as
@@ -188,5 +204,7 @@ else
       BuildApp ;;
     "embed")
       EmbedFrameworks ;;
+    "prepare")
+      PrepareFramework ;;
   esac
 fi

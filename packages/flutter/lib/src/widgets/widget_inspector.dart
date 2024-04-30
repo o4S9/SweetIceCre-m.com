@@ -25,7 +25,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:meta/meta_meta.dart';
 
-import 'app.dart';
 import 'basic.dart';
 import 'binding.dart';
 import 'debug.dart';
@@ -336,7 +335,17 @@ class _ScreenshotContainerLayer extends OffsetLayer {
 class _ScreenshotData {
   _ScreenshotData({
     required this.target,
-  }) : containerLayer = _ScreenshotContainerLayer();
+  }) : containerLayer = _ScreenshotContainerLayer() {
+    // TODO(polina-c): stop duplicating code across disposables
+    // https://github.com/flutter/flutter/issues/137435
+    if (kFlutterMemoryAllocationsEnabled) {
+      FlutterMemoryAllocations.instance.dispatchObjectCreated(
+        library: 'package:flutter/widgets.dart',
+        className: '$_ScreenshotData',
+        object: this,
+      );
+    }
+  }
 
   /// Target to take a screenshot of.
   final RenderObject target;
@@ -376,6 +385,9 @@ class _ScreenshotData {
   /// Releases allocated resources.
   @mustCallSuper
   void dispose() {
+    if (kFlutterMemoryAllocationsEnabled) {
+      FlutterMemoryAllocations.instance.dispatchObjectDisposed(object: this);
+    }
     containerLayer.dispose();
   }
 }
@@ -719,12 +731,7 @@ class InspectorReferenceData {
   int count = 1;
 
   /// The value.
-  Object? get value {
-    if (_ref != null) {
-      return _ref!.target;
-    }
-    return _value;
-  }
+  Object? get value => _ref?.target ?? _value;
 }
 
 // Production implementation of [WidgetInspectorService].
@@ -953,17 +960,11 @@ mixin WidgetInspectorService {
     registerServiceExtension(
       name: name,
       callback: (Map<String, String> parameters) async {
-        final List<String> args = <String>[];
-        int index = 0;
-        while (true) {
-          final String name = 'arg$index';
-          if (parameters.containsKey(name)) {
-            args.add(parameters[name]!);
-          } else {
-            break;
-          }
-          index++;
-        }
+        int index;
+        final List<String> args = <String>[
+          for (index = 0; parameters['arg$index'] != null; index++)
+            parameters['arg$index']!,
+        ];
         // Verify that the only arguments other than perhaps 'isolateId' are
         // arguments we have already handled.
         assert(index == parameters.length || (index == parameters.length - 1 && parameters.containsKey('isolateId')));
@@ -1076,10 +1077,10 @@ mixin WidgetInspectorService {
 
     _registerBoolServiceExtension(
       name: WidgetInspectorServiceExtensions.show.name,
-      getter: () async => WidgetsApp.debugShowWidgetInspectorOverride,
+      getter: () async => WidgetsBinding.instance.debugShowWidgetInspectorOverride,
       setter: (bool value) {
-        if (WidgetsApp.debugShowWidgetInspectorOverride != value) {
-          WidgetsApp.debugShowWidgetInspectorOverride = value;
+        if (WidgetsBinding.instance.debugShowWidgetInspectorOverride != value) {
+          WidgetsBinding.instance.debugShowWidgetInspectorOverride = value;
         }
         return Future<void>.value();
       },
@@ -3188,11 +3189,15 @@ class _InspectorOverlayLayer extends Layer {
       }
       candidates.add(_TransformedRect(candidate, rootRenderObject));
     }
+    final _TransformedRect selectedRect = _TransformedRect(selected, rootRenderObject);
+    final String widgetName = selection.currentElement!.toStringShort();
+    final String width = selectedRect.rect.width.toStringAsFixed(1);
+    final String height = selectedRect.rect.height.toStringAsFixed(1);
 
     final _InspectorOverlayRenderState state = _InspectorOverlayRenderState(
       overlayRect: overlayRect,
-      selected: _TransformedRect(selected, rootRenderObject),
-      tooltip: selection.currentElement!.toStringShort(),
+      selected: selectedRect,
+      tooltip: '$widgetName ($width x $height)',
       textDirection: TextDirection.ltr,
       candidates: candidates,
     );
@@ -3380,7 +3385,7 @@ class _Location {
     required this.file,
     required this.line,
     required this.column,
-    // ignore: unused_element, unused_element_parameter
+    // ignore: unused_element
     this.name,
   });
 
@@ -3397,27 +3402,16 @@ class _Location {
   final String? name;
 
   Map<String, Object?> toJsonMap() {
-    final Map<String, Object?> json = <String, Object?>{
+    return <String, Object?>{
       'file': file,
       'line': line,
       'column': column,
+      if (name != null) 'name': name,
     };
-    if (name != null) {
-      json['name'] = name;
-    }
-    return json;
   }
 
   @override
-  String toString() {
-    final List<String> parts = <String>[];
-    if (name != null) {
-      parts.add(name!);
-    }
-    parts.add(file);
-    parts..add('$line')..add('$column');
-    return parts.join(':');
-  }
+  String toString() => <String>[if (name != null) name!, file, '$line', '$column'].join(':');
 }
 
 bool _isDebugCreator(DiagnosticsNode node) => node is DiagnosticsDebugCreator;

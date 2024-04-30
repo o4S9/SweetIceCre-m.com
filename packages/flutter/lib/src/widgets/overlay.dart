@@ -168,10 +168,10 @@ class OverlayEntry implements Listenable {
 
   // TODO(polina-c): stop duplicating code across disposables
   // https://github.com/flutter/flutter/issues/137435
-  /// Dispatches event of object creation to [MemoryAllocations.instance].
+  /// Dispatches event of object creation to [FlutterMemoryAllocations.instance].
   void _maybeDispatchObjectCreation() {
     if (kFlutterMemoryAllocationsEnabled) {
-      MemoryAllocations.instance.dispatchObjectCreated(
+      FlutterMemoryAllocations.instance.dispatchObjectCreated(
         library: _flutterWidgetsLibrary,
         className: '$OverlayEntry',
         object: this,
@@ -256,7 +256,7 @@ class OverlayEntry implements Listenable {
     assert(!_disposedByOwner);
     assert(_overlay == null, 'An OverlayEntry must first be removed from the Overlay before dispose is called.');
     if (kFlutterMemoryAllocationsEnabled) {
-      MemoryAllocations.instance.dispatchObjectDisposed(object: this);
+      FlutterMemoryAllocations.instance.dispatchObjectDisposed(object: this);
     }
     _disposedByOwner = true;
     if (!mounted) {
@@ -864,6 +864,12 @@ class _WrappingOverlayState extends State<_WrappingOverlay> {
   }
 
   @override
+  void dispose() {
+    _entry..remove()..dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Overlay(
       clipBehavior: widget.clipBehavior,
@@ -1137,7 +1143,7 @@ class _RenderTheater extends RenderBox with ContainerRenderObjectMixin<RenderBox
 
     // After adding `child` to the render tree, we want to make sure it will be
     // laid out in the same frame. This is done by calling markNeedsLayout on the
-    // layout surrgate. This ensures `child` is reachable via tree walk (see
+    // layout surrogate. This ensures `child` is reachable via tree walk (see
     // _RenderLayoutSurrogateProxyBox.performLayout).
     child._layoutSurrogate.markNeedsLayout();
   }
@@ -1923,7 +1929,7 @@ final class _OverlayEntryLocation extends LinkedListEntry<_OverlayEntryLocation>
   //
   // Generally, `assert(_debugIsLocationValid())` should be used to prevent
   // invalid accesses to an invalid `_OverlayEntryLocation` object. Exceptions
-  // to this rule are _removeChild, _deactive, which will be called when the
+  // to this rule are _removeChild, _deactivate, which will be called when the
   // OverlayPortal is being removed from the widget tree and may use the
   // location information to perform cleanup tasks.
   //
@@ -2107,7 +2113,7 @@ class _OverlayPortalElement extends RenderObjectElement {
     final Element? overlayChild = _overlayChild;
     // Instead of just detaching the render objects, removing them from the
     // render subtree entirely. This is a workaround for the
-    // !renderObject.attached assert in the `super.deactive()` method.
+    // !renderObject.attached assert in the `super.deactivate()` method.
     if (overlayChild != null) {
       final _RenderDeferredLayoutBox? box = overlayChild.renderObject as _RenderDeferredLayoutBox?;
       if (box != null) {
@@ -2188,8 +2194,8 @@ class _DeferredLayout extends SingleChildRenderObjectWidget {
 //
 // This `RenderObject` must be a child of a `_RenderTheater`. It guarantees that:
 //
-// 1. It's a relayout boundary, and `markParentNeedsLayout` is overridden such
-//    that it never dirties its `_RenderTheater`.
+// 1. It's a relayout boundary, so calling `markNeedsLayout` on it never dirties
+//    its `_RenderTheater`.
 //
 // 2. Its `layout` implementation is overridden such that `performLayout` does
 //    not do anything when its called from `layout`, preventing the parent
@@ -2229,19 +2235,6 @@ final class _RenderDeferredLayoutBox extends RenderProxyBox with _RenderTheaterM
   void redepthChildren() {
     _layoutSurrogate.redepthChild(this);
     super.redepthChildren();
-  }
-
-  bool _callingMarkParentNeedsLayout = false;
-  @override
-  void markParentNeedsLayout() {
-    // No re-entrant calls.
-    if (_callingMarkParentNeedsLayout) {
-      return;
-    }
-    _callingMarkParentNeedsLayout = true;
-    markNeedsLayout();
-    _layoutSurrogate.markNeedsLayout();
-    _callingMarkParentNeedsLayout = false;
   }
 
   @override

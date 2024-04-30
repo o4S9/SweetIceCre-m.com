@@ -272,7 +272,12 @@ class BuildIOSFrameworkCommand extends BuildFrameworkCommand {
           buildInfo, modeDirectory, iPhoneBuildOutput, simulatorBuildOutput);
 
       // Build and copy plugins.
-      await processPodsIfNeeded(project.ios, getIosBuildDirectory(), buildInfo.mode);
+      await processPodsIfNeeded(
+        project.ios,
+        getIosBuildDirectory(),
+        buildInfo.mode,
+        forceCocoaPodsOnly: true,
+      );
       if (boolArg('plugins') && hasPlugins(project)) {
         await _producePlugins(buildInfo.mode, xcodeBuildConfiguration, iPhoneBuildOutput, simulatorBuildOutput, modeDirectory);
       }
@@ -383,7 +388,7 @@ LICENSE
   s.author                = { 'Flutter Dev Team' => 'flutter-dev@googlegroups.com' }
   s.source                = { :http => '${cache.storageBaseUrl}/flutter_infra_release/flutter/${cache.engineRevision}/$artifactsMode/artifacts.zip' }
   s.documentation_url     = 'https://flutter.dev/docs'
-  s.platform              = :ios, '11.0'
+  s.platform              = :ios, '12.0'
   s.vendored_frameworks   = 'Flutter.xcframework'
 end
 ''';

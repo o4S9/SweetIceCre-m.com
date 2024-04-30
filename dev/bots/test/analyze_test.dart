@@ -10,6 +10,7 @@ import '../analyze.dart';
 import '../custom_rules/analyze.dart';
 import '../custom_rules/no_double_clamp.dart';
 import '../custom_rules/no_stop_watches.dart';
+import '../custom_rules/render_box_intrinsics.dart';
 import '../utils.dart';
 import 'common.dart';
 
@@ -44,6 +45,7 @@ void main() {
   final String testRootPath = path.join('test', 'analyze-test-input', 'root');
   final String dartName = Platform.isWindows ? 'dart.exe' : 'dart';
   final String dartPath = path.canonicalize(path.join('..', '..', 'bin', 'cache', 'dart-sdk', 'bin', dartName));
+  final String testGenDefaultsPath = path.join('test', 'analyze-gen-defaults');
 
   test('analyze.dart - verifyDeprecations', () async {
     final String result = await capture(() => verifyDeprecations(testRootPath, minimumMatches: 2), shouldHaveErrors: true);
@@ -69,7 +71,7 @@ void main() {
       })
       .join('\n');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '$lines\n'
       '║ See: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes\n'
       '╚═══════════════════════════════════════════════════════════════════════════════\n'
@@ -88,7 +90,7 @@ void main() {
       .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
       .toList();
     expect(result.length, 4 + lines.length, reason: 'output had unexpected number of lines:\n${result.join('\n')}');
-    expect(result[0], '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════');
+    expect(result[0], '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════');
     expect(result.getRange(1, result.length - 3).toSet(), lines.toSet());
     expect(result[result.length - 3], '║ See: https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter');
     expect(result[result.length - 2], '╚═══════════════════════════════════════════════════════════════════════════════');
@@ -100,7 +102,7 @@ void main() {
     final String file = 'test/analyze-test-input/root/packages/foo/foo.dart'
       .replaceAll('/', Platform.isWindows ? r'\' : '/');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '║ The following file does not have the right license header for dart files:\n'
       '║   $file\n'
       '║ The expected license header is:\n'
@@ -121,7 +123,7 @@ void main() {
       .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
       .join('\n');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '$lines\n'
       '╚═══════════════════════════════════════════════════════════════════════════════\n'
     );
@@ -139,7 +141,32 @@ void main() {
       .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
       .join('\n');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
+      '$lines\n'
+      '╚═══════════════════════════════════════════════════════════════════════════════\n'
+    );
+  });
+
+  test('analyze.dart - verifyRepositoryLinks', () async {
+    final String result = await capture(() => verifyRepositoryLinks(testRootPath), shouldHaveErrors: true);
+    const String bannedBranch = 'master';
+    final String file = Platform.isWindows ?
+      r'test\analyze-test-input\root\packages\foo\bad_repository_links.dart' :
+      'test/analyze-test-input/root/packages/foo/bad_repository_links.dart';
+    final String lines = <String>[
+        '║ $file contains https://android.googlesource.com/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://chromium.googlesource.com/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://cs.opensource.google.com/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://dart.googlesource.com/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://flutter.googlesource.com/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://source.chromium.org/+/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://github.com/flutter/flutter/tree/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ $file contains https://raw.githubusercontent.com/flutter/flutter/blob/$bannedBranch/file1, which uses the banned "master" branch.',
+        '║ Change the URLs above to the expected pattern by using the "main" branch if it exists, otherwise adding the repository to the list of exceptions in analyze.dart.',
+      ]
+      .join('\n');
+    expect(result,
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '$lines\n'
       '╚═══════════════════════════════════════════════════════════════════════════════\n'
     );
@@ -152,7 +179,7 @@ void main() {
     ), shouldHaveErrors: !Platform.isWindows);
     if (!Platform.isWindows) {
       expect(result,
-        '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+        '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
         '║ test/analyze-test-input/root/packages/foo/serviceaccount.enc:0: file is not valid UTF-8\n'
         '║ All files in this repository must be UTF-8. In particular, images and other binaries\n'
         '║ must not be checked into this repository. This is because we are very sensitive to the\n'
@@ -229,7 +256,7 @@ void main() {
       .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
       .join('\n');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '$lines\n'
       '║ \n'
       '║ For performance reasons, we use a custom "clampDouble" function instead of using "double.clamp".\n'
@@ -259,11 +286,56 @@ void main() {
       .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
       .join('\n');
     expect(result,
-      '╔═╡ERROR╞═══════════════════════════════════════════════════════════════════════\n'
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
       '$lines\n'
       '║ \n'
       '║ Stopwatches introduce flakes by falling out of sync with the FakeAsync used in testing.\n'
       '║ A Stopwatch that stays in sync with FakeAsync is available through the Gesture or Test bindings, through samplingClock.\n'
+      '╚═══════════════════════════════════════════════════════════════════════════════\n'
+    );
+  });
+
+  test('analyze.dart - RenderBox intrinsics', () async {
+    final String result = await capture(() => analyzeWithRules(
+      testRootPath,
+      <AnalyzeRule>[renderBoxIntrinsicCalculation],
+      includePaths: <String>['packages/flutter/lib'],
+    ), shouldHaveErrors: true);
+    final String lines = <String>[
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:12: computeMaxIntrinsicWidth(). Consider calling getMaxIntrinsicWidth instead.',
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:16: f = computeMaxIntrinsicWidth. Consider calling getMaxIntrinsicWidth instead.',
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:23: computeDryBaseline(). Consider calling getDryBaseline instead.',
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:24: computeDryLayout(). Consider calling getDryLayout instead.',
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:31: computeDistanceToActualBaseline(). Consider calling getDistanceToBaseline, or getDistanceToActualBaseline instead.',
+      '║ packages/flutter/lib/renderbox_intrinsics.dart:36: computeMaxIntrinsicHeight(). Consider calling getMaxIntrinsicHeight instead.',
+    ]
+      .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
+      .join('\n');
+    expect(result,
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
+      '$lines\n'
+      '║ \n'
+      '║ Typically the get* methods should be used to obtain the intrinsics of a RenderBox.\n'
+      '╚═══════════════════════════════════════════════════════════════════════════════\n'
+    );
+  });
+
+  test('analyze.dart - verifyMaterialFilesAreUpToDateWithTemplateFiles', () async {
+    String result = await capture(() => verifyMaterialFilesAreUpToDateWithTemplateFiles(
+      testGenDefaultsPath,
+      dartPath,
+    ), shouldHaveErrors: true);
+    final String lines = <String>[
+        '║ chip.dart is not up-to-date with the token template file.',
+      ]
+      .map((String line) => line.replaceAll('/', Platform.isWindows ? r'\' : '/'))
+      .join('\n');
+    const String errorStart = '╔═';
+    result = result.substring(result.indexOf(errorStart));
+    expect(result,
+      '╔═╡ERROR #1╞════════════════════════════════════════════════════════════════════\n'
+      '$lines\n'
+      '║ See: https://github.com/flutter/flutter/blob/main/dev/tools/gen_defaults to update the token template files.\n'
       '╚═══════════════════════════════════════════════════════════════════════════════\n'
     );
   });

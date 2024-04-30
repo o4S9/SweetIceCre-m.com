@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 class MemoryPressureObserver with WidgetsBindingObserver {
   bool sawMemoryPressure = false;
@@ -115,6 +114,34 @@ class RentrantObserver implements WidgetsBindingObserver {
   }
 
   @override
+  bool handleStartBackGesture(PredictiveBackEvent backEvent) {
+    assert(active);
+    WidgetsBinding.instance.addObserver(this);
+    return true;
+  }
+
+  @override
+  bool handleUpdateBackGestureProgress(PredictiveBackEvent backEvent) {
+    assert(active);
+    WidgetsBinding.instance.addObserver(this);
+    return true;
+  }
+
+  @override
+  bool handleCommitBackGesture() {
+    assert(active);
+    WidgetsBinding.instance.addObserver(this);
+    return true;
+  }
+
+  @override
+  bool handleCancelBackGesture() {
+    assert(active);
+    WidgetsBinding.instance.addObserver(this);
+    return true;
+  }
+
+  @override
   Future<bool> didPushRoute(String route) {
     assert(active);
     WidgetsBinding.instance.addObserver(this);
@@ -144,7 +171,7 @@ void main() {
         .handlePlatformMessage('flutter/lifecycle', message, (_) { });
   }
 
-  testWidgetsWithLeakTracking('Rentrant observer callbacks do not result in exceptions', (WidgetTester tester) async {
+  testWidgets('Rentrant observer callbacks do not result in exceptions', (WidgetTester tester) async {
     final RentrantObserver observer = RentrantObserver();
     WidgetsBinding.instance.handleAccessibilityFeaturesChanged();
     WidgetsBinding.instance.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
@@ -161,7 +188,7 @@ void main() {
     expect(observer.removeSelf(), 0);
   });
 
-  testWidgetsWithLeakTracking('didHaveMemoryPressure callback', (WidgetTester tester) async {
+  testWidgets('didHaveMemoryPressure callback', (WidgetTester tester) async {
     final MemoryPressureObserver observer = MemoryPressureObserver();
     WidgetsBinding.instance.addObserver(observer);
     final ByteData message = const JSONMessageCodec().encodeMessage(<String, dynamic>{'type': 'memoryPressure'})!;
@@ -170,7 +197,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('handleLifecycleStateChanged callback', (WidgetTester tester) async {
+  testWidgets('handleLifecycleStateChanged callback', (WidgetTester tester) async {
     final AppLifecycleStateObserver observer = AppLifecycleStateObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -225,11 +252,17 @@ void main() {
     ]);
 
     observer.accumulatedStates.clear();
-    await expectLater(() async => setAppLifeCycleState(AppLifecycleState.detached), throwsAssertionError);
+    await setAppLifeCycleState(AppLifecycleState.detached);
+    expect(observer.accumulatedStates, <AppLifecycleState>[
+      AppLifecycleState.inactive,
+      AppLifecycleState.hidden,
+      AppLifecycleState.paused,
+      AppLifecycleState.detached,
+    ]);
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRoute callback', (WidgetTester tester) async {
+  testWidgets('didPushRoute callback', (WidgetTester tester) async {
     final PushRouteObserver observer = PushRouteObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -241,7 +274,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRouteInformation calls didPushRoute by default', (WidgetTester tester) async {
+  testWidgets('didPushRouteInformation calls didPushRoute by default', (WidgetTester tester) async {
     final PushRouteObserver observer = PushRouteObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -259,7 +292,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRouteInformation calls didPushRoute correctly when handling url', (WidgetTester tester) async {
+  testWidgets('didPushRouteInformation calls didPushRoute correctly when handling url', (WidgetTester tester) async {
     final PushRouteObserver observer = PushRouteObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -291,7 +324,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRouteInformation callback', (WidgetTester tester) async {
+  testWidgets('didPushRouteInformation callback', (WidgetTester tester) async {
     final PushRouteInformationObserver observer = PushRouteInformationObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -308,7 +341,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRouteInformation callback can handle url', (WidgetTester tester) async {
+  testWidgets('didPushRouteInformation callback can handle url', (WidgetTester tester) async {
     final PushRouteInformationObserver observer = PushRouteInformationObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -326,7 +359,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('didPushRouteInformation callback with null state', (WidgetTester tester) async {
+  testWidgets('didPushRouteInformation callback with null state', (WidgetTester tester) async {
     final PushRouteInformationObserver observer = PushRouteInformationObserver();
     WidgetsBinding.instance.addObserver(observer);
 
@@ -344,7 +377,7 @@ void main() {
     WidgetsBinding.instance.removeObserver(observer);
   });
 
-  testWidgetsWithLeakTracking('Application lifecycle affects frame scheduling', (WidgetTester tester) async {
+  testWidgets('Application lifecycle affects frame scheduling', (WidgetTester tester) async {
     expect(tester.binding.hasScheduledFrame, isFalse);
 
     await setAppLifeCycleState(AppLifecycleState.paused);
@@ -398,7 +431,22 @@ void main() {
     await tester.pump();
   });
 
-  testWidgetsWithLeakTracking('scheduleFrameCallback error control test', (WidgetTester tester) async {
+  testWidgets('resetInternalState resets lifecycleState and framesEnabled to initial state', (WidgetTester tester) async {
+    // Initial state
+    expect(tester.binding.lifecycleState, isNull);
+    expect(tester.binding.framesEnabled, isTrue);
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    expect(tester.binding.lifecycleState, AppLifecycleState.paused);
+    expect(tester.binding.framesEnabled, isFalse);
+
+    tester.binding.resetInternalState();
+
+    expect(tester.binding.lifecycleState, isNull);
+    expect(tester.binding.framesEnabled, isTrue);
+  });
+
+  testWidgets('scheduleFrameCallback error control test', (WidgetTester tester) async {
     late FlutterError error;
     try {
       tester.binding.scheduleFrameCallback((Duration _) { }, rescheduling: true);
@@ -430,7 +478,7 @@ void main() {
     );
   });
 
-  testWidgetsWithLeakTracking('defaultStackFilter elides framework Element mounting stacks', (WidgetTester tester) async {
+  testWidgets('defaultStackFilter elides framework Element mounting stacks', (WidgetTester tester) async {
     final FlutterExceptionHandler? oldHandler = FlutterError.onError;
     late FlutterErrorDetails errorDetails;
     FlutterError.onError = (FlutterErrorDetails details) {

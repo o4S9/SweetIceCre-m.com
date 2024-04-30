@@ -3,23 +3,24 @@
 // found in the LICENSE file.
 
 import 'package:file/memory.dart';
-import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/config.dart';
 import 'package:flutter_tools/src/reporting/unified_analytics.dart';
 import 'package:unified_analytics/unified_analytics.dart';
 
 import '../src/common.dart';
-import '../src/context.dart';
 import '../src/fakes.dart';
 
 void main() {
   const String userBranch = 'abc123';
   const String clientIde = 'VSCode';
 
-  late FileSystem fs;
+  late MemoryFileSystem fs;
+  late Config config;
   late FakeAnalytics analyticsOverride;
 
   setUp(() {
     fs = MemoryFileSystem.test();
+    config = Config.test();
 
     analyticsOverride = getInitializedFakeAnalyticsInstance(
       fs: fs,
@@ -30,14 +31,32 @@ void main() {
     );
   });
 
+  group('Unit testing util:', () {
+    test('getEnabledFeatures is null', () {
+      final String? enabledFeatures = getEnabledFeatures(config);
+      expect(enabledFeatures, isNull);
+    });
+
+    testWithoutContext('getEnabledFeatures not null', () {
+      config.setValue('cli-animations', true);
+      config.setValue('enable-flutter-preview', true);
+
+      final String? enabledFeatures = getEnabledFeatures(config);
+      expect(enabledFeatures, isNotNull);
+      expect(enabledFeatures!.split(','), unorderedEquals(<String>['enable-flutter-preview', 'cli-animations']));
+    });
+  });
+
   group('Unit testing getAnalytics', () {
-    testWithoutContext('Successfully creates the instance for standard branch', () {
+    testWithoutContext('Successfully creates the instance for standard branch',
+        () {
       final Analytics analytics = getAnalytics(
         runningOnBot: false,
         flutterVersion: FakeFlutterVersion(),
         environment: const <String, String>{},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
 
       expect(analytics.clientId, isNot(NoOpAnalytics.staticClientId),
@@ -55,6 +74,7 @@ void main() {
         environment: const <String, String>{},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
 
       expect(
@@ -74,6 +94,7 @@ void main() {
         environment: const <String, String>{},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
 
       expect(
@@ -91,6 +112,7 @@ void main() {
         environment: const <String, String>{},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
 
       expect(
@@ -108,6 +130,7 @@ void main() {
         environment: const <String, String>{'FLUTTER_SUPPRESS_ANALYTICS': 'true'},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
 
       expect(
@@ -130,13 +153,14 @@ void main() {
       expect(analyticsOverride.sentEvents, hasLength(1));
     });
 
-    testUsingContext('Client IDE is passed and found in events', () {
+    testWithoutContext('Client IDE is passed and found in events', () {
       final Analytics analytics = getAnalytics(
         runningOnBot: false,
         flutterVersion: FakeFlutterVersion(),
         environment: const <String, String>{},
         analyticsOverride: analyticsOverride,
         clientIde: clientIde,
+        config: config,
       );
       analytics as FakeAnalytics;
 

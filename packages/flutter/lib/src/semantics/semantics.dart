@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-// ignore: deprecated_member_use
-import 'dart:ui' show Offset, Rect, SemanticsAction, SemanticsFlag, SemanticsUpdate, SemanticsUpdateBuilderNew, StringAttribute, TextDirection;
+import 'dart:ui' show Offset, Rect, SemanticsAction, SemanticsFlag, SemanticsUpdate, SemanticsUpdateBuilder, StringAttribute, TextDirection;
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
@@ -1656,7 +1655,7 @@ class SemanticsProperties extends DiagnosticableTree {
     properties.add(DiagnosticsProperty<bool>('mixed', mixed, defaultValue: null));
     properties.add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null));
     properties.add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null));
-    properties.add(StringProperty('identifier', identifier));
+    properties.add(StringProperty('identifier', identifier, defaultValue: null));
     properties.add(StringProperty('label', label, defaultValue: null));
     properties.add(AttributedStringProperty('attributedLabel', attributedLabel, defaultValue: null));
     properties.add(StringProperty('value', value, defaultValue: null));
@@ -1667,7 +1666,7 @@ class SemanticsProperties extends DiagnosticableTree {
     properties.add(AttributedStringProperty('attributedDecreasedValue', attributedDecreasedValue, defaultValue: null));
     properties.add(StringProperty('hint', hint, defaultValue: null));
     properties.add(AttributedStringProperty('attributedHint', attributedHint, defaultValue: null));
-    properties.add(StringProperty('tooltip', tooltip));
+    properties.add(StringProperty('tooltip', tooltip, defaultValue: null));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection, defaultValue: null));
     properties.add(DiagnosticsProperty<SemanticsSortKey>('sortKey', sortKey, defaultValue: null));
     properties.add(DiagnosticsProperty<SemanticsHintOverrides>('hintOverrides', hintOverrides, defaultValue: null));
@@ -1840,7 +1839,7 @@ class SemanticsNode with DiagnosticableTreeMixin {
   /// [isMergedIntoParent].
   ///
   /// An invisible node can be safely dropped from the semantic tree without
-  /// loosing semantic information that is relevant for describing the content
+  /// losing semantic information that is relevant for describing the content
   /// currently shown on screen.
   bool get isInvisible => !isMergedIntoParent && rect.isEmpty;
 
@@ -2750,8 +2749,7 @@ class SemanticsNode with DiagnosticableTreeMixin {
   static final Int32List _kEmptyCustomSemanticsActionsList = Int32List(0);
   static final Float64List _kIdentityTransform = _initIdentityTransform();
 
-  // ignore: deprecated_member_use
-  void _addToUpdate(SemanticsUpdateBuilderNew builder, Set<int> customSemanticsActionIdsUpdate) {
+  void _addToUpdate(SemanticsUpdateBuilder builder, Set<int> customSemanticsActionIdsUpdate) {
     assert(_dirty);
     final SemanticsData data = getSemanticsData();
     final Int32List childrenInTraversalOrder;
@@ -2961,6 +2959,7 @@ class SemanticsNode with DiagnosticableTreeMixin {
     properties.add(DoubleProperty('scrollExtentMin', scrollExtentMin, defaultValue: null));
     properties.add(DoubleProperty('scrollPosition', scrollPosition, defaultValue: null));
     properties.add(DoubleProperty('scrollExtentMax', scrollExtentMax, defaultValue: null));
+    properties.add(IntProperty('indexInParent', indexInParent, defaultValue: null));
     properties.add(DoubleProperty('elevation', elevation, defaultValue: 0.0));
     properties.add(DoubleProperty('thickness', thickness, defaultValue: 0.0));
   }
@@ -3006,12 +3005,10 @@ class SemanticsNode with DiagnosticableTreeMixin {
       return const <SemanticsNode>[];
     }
 
-    switch (childOrder) {
-      case DebugSemanticsDumpOrder.inverseHitTest:
-        return _children!;
-      case DebugSemanticsDumpOrder.traversalOrder:
-        return _childrenInTraversalOrder();
-    }
+    return switch (childOrder) {
+      DebugSemanticsDumpOrder.inverseHitTest => _children!,
+      DebugSemanticsDumpOrder.traversalOrder => _childrenInTraversalOrder(),
+    };
   }
 }
 
@@ -3323,7 +3320,7 @@ class SemanticsOwner extends ChangeNotifier {
     // TODO(polina-c): stop duplicating code across disposables
     // https://github.com/flutter/flutter/issues/137435
     if (kFlutterMemoryAllocationsEnabled) {
-      MemoryAllocations.instance.dispatchObjectCreated(
+      FlutterMemoryAllocations.instance.dispatchObjectCreated(
         library: 'package:flutter/semantics.dart',
         className: '$SemanticsOwner',
         object: this,
@@ -3351,7 +3348,7 @@ class SemanticsOwner extends ChangeNotifier {
   @override
   void dispose() {
     if (kFlutterMemoryAllocationsEnabled) {
-      MemoryAllocations.instance.dispatchObjectDisposed(object: this);
+      FlutterMemoryAllocations.instance.dispatchObjectDisposed(object: this);
     }
     _dirtyNodes.clear();
     _nodes.clear();
@@ -3407,7 +3404,7 @@ class SemanticsOwner extends ChangeNotifier {
           'and its semantic information is not merged into a visible parent.'
         ),
         ErrorHint(
-          'An invisible SemantiscNode makes the accessibility experience confusing, '
+          'An invisible SemanticsNode makes the accessibility experience confusing, '
           'as it does not provide any visual indication when the user selects it '
           'via accessibility technologies.'
         ),
@@ -3444,8 +3441,7 @@ class SemanticsOwner extends ChangeNotifier {
       }
     }
     visitedNodes.sort((SemanticsNode a, SemanticsNode b) => a.depth - b.depth);
-    // ignore: deprecated_member_use
-    final SemanticsUpdateBuilderNew builder = SemanticsBinding.instance.createSemanticsUpdateBuilder();
+    final SemanticsUpdateBuilder builder = SemanticsBinding.instance.createSemanticsUpdateBuilder();
     for (final SemanticsNode node in visitedNodes) {
       assert(node.parent?._dirty != true); // could be null (no parent) or false (not dirty)
       // The _serialize() method marks the node as not dirty, and
@@ -5044,12 +5040,11 @@ AttributedString _concatAttributedString({
     return thisAttributedString;
   }
   if (thisTextDirection != otherTextDirection && otherTextDirection != null) {
-    switch (otherTextDirection) {
-      case TextDirection.rtl:
-        otherAttributedString = AttributedString(Unicode.RLE) + otherAttributedString + AttributedString(Unicode.PDF);
-      case TextDirection.ltr:
-        otherAttributedString = AttributedString(Unicode.LRE) + otherAttributedString + AttributedString(Unicode.PDF);
-    }
+    final AttributedString directionEmbedding = switch (otherTextDirection) {
+      TextDirection.rtl => AttributedString(Unicode.RLE),
+      TextDirection.ltr => AttributedString(Unicode.LRE),
+    };
+    otherAttributedString = directionEmbedding + otherAttributedString + AttributedString(Unicode.PDF);
   }
   if (thisAttributedString.string.isEmpty) {
     return otherAttributedString;

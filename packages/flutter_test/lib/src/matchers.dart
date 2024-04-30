@@ -14,7 +14,7 @@ import 'package:matcher/expect.dart';
 import 'package:matcher/src/expect/async_matcher.dart'; // ignore: implementation_imports
 import 'package:vector_math/vector_math_64.dart' show Matrix3;
 
-import '_matchers_io.dart' if (dart.library.html) '_matchers_web.dart' show MatchesGoldenFile, captureImage;
+import '_matchers_io.dart' if (dart.library.js_interop) '_matchers_web.dart' show MatchesGoldenFile, captureImage;
 import 'accessibility.dart';
 import 'binding.dart';
 import 'controller.dart';
@@ -1481,8 +1481,6 @@ double _matrix3Distance(Matrix3 a, Matrix3 b) {
 }
 
 double _sizeDistance(Size a, Size b) {
-  // TODO(a14n): remove ignore when lint is updated, https://github.com/dart-lang/linter/issues/1843
-  // ignore: unnecessary_parenthesis
   final Offset delta = (b - a) as Offset;
   return delta.distance;
 }
