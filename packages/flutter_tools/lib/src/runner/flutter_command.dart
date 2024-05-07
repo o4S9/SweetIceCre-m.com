@@ -527,7 +527,7 @@ abstract class FlutterCommand extends Command<void> {
   void addWasmCompileFlag() {
     argParser.addFlag(
       FlutterOptions.kWebWasmFlag,
-      help: kWasmCompile,
+      help: 'Compile to WebAssembly (with fallback to JavaScript).\n$kWasmMoreInfo',
       negatable: false,
     );
   }
