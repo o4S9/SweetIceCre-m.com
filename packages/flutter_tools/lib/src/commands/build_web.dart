@@ -102,7 +102,7 @@ class BuildWebCommand extends BuildSubCommand {
     argParser.addSeparator('WebAssembly compilation options');
     argParser.addFlag(
       FlutterOptions.kWebWasmFlag,
-      help: 'Compile to WebAssembly rather than JavaScript.\n$kWasmMoreInfo',
+      help: kWasmCompile,
       negatable: false,
     );
     argParser.addFlag(

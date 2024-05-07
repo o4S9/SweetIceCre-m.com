@@ -183,7 +183,7 @@ abstract class RunCommandBase extends FlutterCommand with DeviceBasedDevelopment
       )
       ..addFlag(
         FlutterOptions.kWebWasmFlag,
-        help: 'Compile to WebAssembly rather than JavaScript.\n$kWasmMoreInfo',
+        help: kWasmCompile,
         negatable: false,
       );
     usesWebOptions(verboseHelp: verboseHelp);
