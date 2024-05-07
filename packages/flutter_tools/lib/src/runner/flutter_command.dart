@@ -32,6 +32,7 @@ import '../project.dart';
 import '../reporting/reporting.dart';
 import '../reporting/unified_analytics.dart';
 import '../web/compile.dart';
+import '../web/web_constants.dart';
 import 'flutter_command_runner.dart';
 import 'target_devices.dart';
 
@@ -520,6 +521,14 @@ abstract class FlutterCommand extends Command<void> {
     argParser.addFlag('serve-observatory',
       hide: !verboseHelp,
       help: 'Serve the legacy Observatory developer tooling through the VM service.',
+    );
+  }
+
+  void addWasmCompileFlag() {
+    argParser.addFlag(
+      FlutterOptions.kWebWasmFlag,
+      help: kWasmCompile,
+      negatable: false,
     );
   }
 

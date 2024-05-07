@@ -30,7 +30,6 @@ import '../runner/flutter_command_runner.dart';
 import '../tracing.dart';
 import '../vmservice.dart';
 import '../web/compile.dart';
-import '../web/web_constants.dart';
 import '../web/web_runner.dart';
 import 'daemon.dart';
 
@@ -180,12 +179,8 @@ abstract class RunCommandBase extends FlutterCommand with DeviceBasedDevelopment
         hide: !verboseHelp,
         help: 'Uninstall previous versions of the app on the device '
               'before reinstalling. Currently only supported on iOS.',
-      )
-      ..addFlag(
-        FlutterOptions.kWebWasmFlag,
-        help: kWasmCompile,
-        negatable: false,
       );
+    addWasmCompileFlag();
     usesWebOptions(verboseHelp: verboseHelp);
     usesTargetOption();
     usesPortOptions(verboseHelp: verboseHelp);
