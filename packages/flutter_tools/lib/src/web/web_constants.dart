@@ -4,4 +4,4 @@
 
 const String kWasmMoreInfo = 'See https://flutter.dev/wasm for more information.';
 
-const String kWasmCompile = 'Compile to WebAssembly (as well as JavaScript).\n$kWasmMoreInfo';
+const String kWasmCompile = 'Compile to WebAssembly (with fallback to JavaScript).\n$kWasmMoreInfo';
