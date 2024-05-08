@@ -525,10 +525,17 @@ class SnackBar extends StatefulWidget {
 class _SnackBarState extends State<SnackBar> {
   bool _wasVisible = false;
 
+  CurvedAnimation? _heightAnimation;
+  CurvedAnimation? _fadeInAnimation;
+  CurvedAnimation? _fadeInM3Animation;
+  CurvedAnimation? _fadeOutAnimation;
+  CurvedAnimation? _heightM3Animation;
+
   @override
   void initState() {
     super.initState();
     widget.animation!.addStatusListener(_onAnimationStatusChanged);
+    _setAnimations();
   }
 
   @override
@@ -537,12 +544,57 @@ class _SnackBarState extends State<SnackBar> {
     if (widget.animation != oldWidget.animation) {
       oldWidget.animation!.removeStatusListener(_onAnimationStatusChanged);
       widget.animation!.addStatusListener(_onAnimationStatusChanged);
+      _disposeAnimations();
+      _setAnimations();
     }
   }
 
+  void _setAnimations() {
+    assert(widget.animation != null);
+    _heightAnimation = CurvedAnimation(parent: widget.animation!, curve: _snackBarHeightCurve);
+    _fadeInAnimation = CurvedAnimation(parent: widget.animation!, curve: _snackBarFadeInCurve);
+    _fadeInM3Animation = CurvedAnimation(parent: widget.animation!, curve: _snackBarM3FadeInCurve);
+    _fadeOutAnimation = CurvedAnimation(
+      parent: widget.animation!,
+      curve: _snackBarFadeOutCurve,
+      reverseCurve: const Threshold(0.0),
+    );
+    // Material 3 Animation has a height animation on entry, but a direct fade out on exit.
+    _heightM3Animation = CurvedAnimation(
+      parent: widget.animation!,
+      curve: _snackBarM3HeightCurve,
+      reverseCurve: const Threshold(0.0),
+    );
+
+  }
+
+  void _disposeAnimations() {
+    _heightAnimation?.dispose();
+    _fadeInAnimation?.dispose();
+    _fadeInM3Animation?.dispose();
+    _fadeOutAnimation?.dispose();
+    _heightM3Animation?.dispose();
+    _heightAnimation = null;
+    _fadeInAnimation = null;
+    _fadeInM3Animation = null;
+    _fadeOutAnimation = null;
+    _heightM3Animation = null;
+  }
+
+  bool _debugDisposed = false;
+
   @override
   void dispose() {
+    assert(() {
+      print('Snackbar.dispose called. $this');
+      if (_debugDisposed) {
+        print('Snackbar.dispose is used after being disposed. $this');
+      }
+      _debugDisposed = true;
+      return true;
+    }());
     widget.animation!.removeStatusListener(_onAnimationStatusChanged);
+    _disposeAnimations();
     super.dispose();
   }
 
@@ -562,6 +614,12 @@ class _SnackBarState extends State<SnackBar> {
 
   @override
   Widget build(BuildContext context) {
+    assert(() {
+      if (_debugDisposed) {
+        print('Snackbar.dispose is used after being disposed. $this');
+      }
+      return true;
+    }());
     assert(debugCheckHasMediaQuery(context));
     final bool accessibleNavigation = MediaQuery.accessibleNavigationOf(context);
     assert(widget.animation != null);
@@ -634,21 +692,7 @@ class _SnackBarState extends State<SnackBar> {
     final double actionHorizontalMargin = (widget.padding?.resolve(TextDirection.ltr).right ?? horizontalPadding) / 2;
     final double iconHorizontalMargin = (widget.padding?.resolve(TextDirection.ltr).right ?? horizontalPadding) / 12.0;
 
-    final CurvedAnimation heightAnimation = CurvedAnimation(parent: widget.animation!, curve: _snackBarHeightCurve);
-    final CurvedAnimation fadeInAnimation = CurvedAnimation(parent: widget.animation!, curve: _snackBarFadeInCurve);
-    final CurvedAnimation fadeInM3Animation = CurvedAnimation(parent: widget.animation!, curve: _snackBarM3FadeInCurve);
 
-    final CurvedAnimation fadeOutAnimation = CurvedAnimation(
-      parent: widget.animation!,
-      curve: _snackBarFadeOutCurve,
-      reverseCurve: const Threshold(0.0),
-    );
-    // Material 3 Animation has a height animation on entry, but a direct fade out on exit.
-    final CurvedAnimation heightM3Animation = CurvedAnimation(
-      parent: widget.animation!,
-      curve: _snackBarM3HeightCurve,
-      reverseCurve: const Threshold(0.0),
-    );
 
 
     final IconButton? iconButton = showCloseIcon
@@ -758,7 +802,7 @@ class _SnackBarState extends State<SnackBar> {
         child: accessibleNavigation || theme.useMaterial3
             ? snackBar
             : FadeTransition(
-                opacity: fadeOutAnimation,
+                opacity: _fadeOutAnimation!,
                 child: snackBar,
               ),
       ),
@@ -808,19 +852,19 @@ class _SnackBarState extends State<SnackBar> {
       snackBarTransition = snackBar;
     } else if (isFloatingSnackBar && !theme.useMaterial3) {
       snackBarTransition = FadeTransition(
-        opacity: fadeInAnimation,
+        opacity: _fadeInAnimation!,
         child: snackBar,
       );
      // Is Material 3 Floating Snack Bar.
     } else if (isFloatingSnackBar && theme.useMaterial3) {
       snackBarTransition = FadeTransition(
-        opacity: fadeInM3Animation,
+        opacity: _fadeInM3Animation!,
         child: AnimatedBuilder(
-          animation: heightM3Animation,
+          animation: _heightM3Animation!,
           builder: (BuildContext context, Widget? child) {
             return Align(
               alignment: AlignmentDirectional.bottomStart,
-              heightFactor: heightM3Animation.value,
+              heightFactor: _heightM3Animation!.value,
               child: child,
             );
           },
@@ -829,11 +873,20 @@ class _SnackBarState extends State<SnackBar> {
       );
     } else {
       snackBarTransition = AnimatedBuilder(
-        animation: heightAnimation,
+        animation: _heightAnimation!,
         builder: (BuildContext context, Widget? child) {
+          assert(() {
+            if (_heightAnimation == null) {
+              print('SnackBar._heightAnimation in AnimatedBuilder. $this');
+            }
+            if (_debugDisposed) {
+              print('SnackBar is disposed in AnimatedBuilder. $this');
+            }
+            return true;
+          }());
           return Align(
             alignment: AlignmentDirectional.topStart,
-            heightFactor: heightAnimation.value,
+            heightFactor: _heightAnimation!.value,
             child: child,
           );
         },
