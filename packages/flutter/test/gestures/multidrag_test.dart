@@ -2,13 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 import 'gesture_tester.dart';
 
-class TestDrag extends Drag { }
+class TestDrag extends Drag {
+  TestDrag({this.onUpdate, this.onEnd, this.onCancel});
+  final void Function(DragUpdateDetails details)? onUpdate;
+  final void Function(DragEndDetails details)? onEnd;
+  final void Function()? onCancel;
+  @override
+  void update(DragUpdateDetails details) {
+    onUpdate?.call(details);
+  }
+  @override
+  void end(DragEndDetails details) {
+    onEnd?.call(details);
+  }
+  @override
+  void cancel() {
+    onCancel?.call();
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -125,6 +144,103 @@ void main() {
       ),
       areCreateAndDispose,
     );
+  });
+
+  testGesture('Obtain the correct boundary information in the callback.', (GestureTester tester) {
+    final ImmediateMultiDragGestureRecognizer drag = ImmediateMultiDragGestureRecognizer(
+      createDragBoundary: (Offset initialPosition) {
+        return DragRectBoundary(
+          boundary: const Rect.fromLTWH(100, 100, 300, 300),
+          rectOffset: const Offset(50, 50),
+          rectSize: const Size(100, 100)
+        );
+      },
+    );
+
+    final List<String> dragCallbacks = <String>[];
+    drag.onStart = (Offset position) {
+      return TestDrag(
+        onUpdate: (DragUpdateDetails details) {
+          dragCallbacks.add('update(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+        },
+        onEnd: (DragEndDetails details) {
+          dragCallbacks.add('end');
+        },
+        onCancel: () {
+          dragCallbacks.add('cancel');
+        },
+      );
+    };
+
+    const PointerDownEvent down = PointerDownEvent(
+        pointer: 6,
+        position: Offset(200.0, 200.0),
+      );
+    const PointerMoveEvent move = PointerMoveEvent(
+      pointer: 6,
+      delta: Offset(200.0, 200.0),
+      position: Offset(400.0, 400.0),
+    );
+    const PointerUpEvent up = PointerUpEvent(
+      pointer: 6,
+      position: Offset(400.0, 400.0),
+    );
+    drag.addPointer(down);
+    tester.closeArena(down.pointer);
+    tester.route(down);
+    tester.route(move);
+    tester.route(up);
+    expect(dragCallbacks, <String>['update(InBoundary)', 'update(OutOfBoundary)', 'end']);
+    drag.dispose();
+  });
+
+  testGesture('The drag gesture is cancelled when it exceeds the boundary.', (GestureTester tester) {
+    final ImmediateMultiDragGestureRecognizer drag = ImmediateMultiDragGestureRecognizer(
+      createDragBoundary: (Offset initialPosition) {
+        return DragRectBoundary(
+          boundary: const Rect.fromLTWH(100, 100, 300, 300),
+          rectOffset: const Offset(50, 50),
+          rectSize: const Size(100, 100)
+        );
+      },
+      cancelWhenOutOfBoundary: true,
+    );
+
+    final List<String> dragCallbacks = <String>[];
+    drag.onStart = (Offset position) {
+      return TestDrag(
+        onUpdate: (DragUpdateDetails details) {
+          dragCallbacks.add('update');
+        },
+        onEnd: (DragEndDetails details) {
+          dragCallbacks.add('end');
+        },
+        onCancel: () {
+          dragCallbacks.add('cancel');
+        },
+      );
+    };
+
+    const PointerDownEvent down = PointerDownEvent(
+        pointer: 6,
+        position: Offset(200.0, 200.0),
+      );
+    const PointerMoveEvent move = PointerMoveEvent(
+      pointer: 6,
+      delta: Offset(200.0, 200.0),
+      position: Offset(400.0, 400.0),
+    );
+    const PointerUpEvent up = PointerUpEvent(
+      pointer: 6,
+      position: Offset(400.0, 400.0),
+    );
+    drag.addPointer(down);
+    tester.closeArena(down.pointer);
+    tester.route(down);
+    tester.route(move);
+    tester.route(up);
+    expect(dragCallbacks, <String>['update', 'cancel']);
+    drag.dispose();
   });
 }
 

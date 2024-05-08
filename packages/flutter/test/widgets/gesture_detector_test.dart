@@ -1073,7 +1073,163 @@ void main() {
       await tester.pumpAndSettle();
       expect(log, <String>['double-tap-down']);
     });
+
+    testWidgets('Customize drag gesture boundaries', (WidgetTester tester) async {
+      final List<String> log = <String>[];
+      final _TestDragBoundary dragBoundary = _TestDragBoundary();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Center(
+            child: GestureDetector(
+              dragBoundaryProviderBuilder: (BuildContext context) {
+                return dragBoundary;
+              },
+              onPanStart: (DragStartDetails details) {
+                log.add('PanStart(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+              },
+              onPanUpdate: (DragUpdateDetails details) {
+                log.add('PanUpdate(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+              },
+              onPanEnd: (DragEndDetails details) {
+                log.add('PanEnd');
+              },
+              onPanCancel: () {
+                log.add('PanCancel');
+              },
+              child: Container(
+                width: 100.0,
+                height: 100.0,
+                color: const Color(0xFF00FF00),
+              ),
+            ),
+          ),
+        ),
+      );
+      final TestGesture drag = await tester.startGesture(tester.getCenter(find.byType(Container)));
+      await tester.pump(kLongPressTimeout);
+      await drag.moveBy(const Offset(100.0, 100.0));
+      dragBoundary.nextUpdateIsWithinBoundary = false;
+      await drag.moveBy(const Offset(100.0, 100.0));
+      await drag.up();
+      await tester.pumpAndSettle();
+      expect(log, <String>['PanStart(InBoundary)', 'PanUpdate(InBoundary)', 'PanUpdate(OutOfBoundary)', 'PanEnd']);
+    });
+
+    testWidgets('Drag gesture boundary created using DragPointBoundaryProvider', (WidgetTester tester) async {
+      final List<String> log = <String>[];
+      final GlobalKey boundaryKey = GlobalKey();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: DragPointBoundaryProvider(
+            key: boundaryKey,
+            child: Padding(
+              padding: const EdgeInsets.all(100),
+              child: Center(
+                child: GestureDetector(
+                  dragBoundaryProviderBuilder: (BuildContext context) {
+                    return DragPointBoundaryProvider.of(context);
+                  },
+                  onPanStart: (DragStartDetails details) {
+                    log.add('PanStart(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+                  },
+                  onPanUpdate: (DragUpdateDetails details) {
+                    log.add('PanUpdate(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+                  },
+                  onPanEnd: (DragEndDetails details) {
+                    log.add('PanEnd');
+                  },
+                  onPanCancel: () {
+                    log.add('PanCancel');
+                  },
+                  child: Container(
+                    width: 100.0,
+                    height: 100.0,
+                    color: const Color(0xFF00FF00),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final RenderBox rb = boundaryKey.currentContext!.findRenderObject()! as RenderBox;
+      final TestGesture drag = await tester.startGesture(tester.getCenter(find.byType(Container)));
+      await tester.pump(kLongPressTimeout);
+      await drag.moveTo(rb.localToGlobal(Offset.zero));
+      await drag.moveTo(rb.localToGlobal(Offset.zero) - const Offset(1, 1));
+      await drag.up();
+      await tester.pumpAndSettle();
+      expect(log, <String>['PanStart(InBoundary)', 'PanUpdate(InBoundary)', 'PanUpdate(OutOfBoundary)', 'PanEnd']);
+    });
+
+    testWidgets('Drag gesture boundary created using DragRectBoundaryProvider', (WidgetTester tester) async {
+      final List<String> log = <String>[];
+      final GlobalKey boundaryKey = GlobalKey();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: DragRectBoundaryProvider(
+            key: boundaryKey,
+            child: Padding(
+              padding: const EdgeInsets.all(100),
+              child: Center(
+                child: GestureDetector(
+                  dragBoundaryProviderBuilder: (BuildContext context) {
+                    return DragRectBoundaryProvider.of(context);
+                  },
+                  onPanStart: (DragStartDetails details) {
+                    log.add('PanStart(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+                  },
+                  onPanUpdate: (DragUpdateDetails details) {
+                    log.add('PanUpdate(${details.boundaryInfo!.isWithinBoundary ? 'InBoundary' : 'OutOfBoundary'})');
+                  },
+                  onPanEnd: (DragEndDetails details) {
+                    log.add('PanEnd');
+                  },
+                  onPanCancel: () {
+                    log.add('PanCancel');
+                  },
+                  child: Container(
+                    width: 100.0,
+                    height: 100.0,
+                    color: const Color(0xFF00FF00),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final RenderBox rb = boundaryKey.currentContext!.findRenderObject()! as RenderBox;
+      final TestGesture drag = await tester.startGesture(tester.getCenter(find.byType(Container)));
+      await tester.pump(kLongPressTimeout);
+      await drag.moveTo(rb.localToGlobal(Offset.zero) + const Offset(50, 50));
+      await drag.moveTo(rb.localToGlobal(Offset.zero) + const Offset(49, 49));
+      await drag.up();
+      await tester.pumpAndSettle();
+      expect(log, <String>['PanStart(InBoundary)', 'PanUpdate(InBoundary)', 'PanUpdate(OutOfBoundary)', 'PanEnd']);
+    });
   });
+}
+
+class _TestDragBoundary extends DragBoundary implements GestureDragBoundaryProvider {
+  bool nextUpdateIsWithinBoundary = true;
+  @override
+  Offset getNearestPositionWithinBoundary(Offset globalLocation) {
+    return Offset.zero;
+  }
+
+  @override
+  bool isWithinBoundary(Offset globalLocation) {
+    return nextUpdateIsWithinBoundary;
+  }
+
+  @override
+  DragBoundary getDragBoundary(BuildContext context, Offset initialPosition) {
+    return this;
+  }
 }
 
 class _EmptySemanticsGestureDelegate extends SemanticsGestureDelegate {

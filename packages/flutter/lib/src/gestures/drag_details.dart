@@ -4,6 +4,7 @@
 
 import 'package:flutter/foundation.dart';
 
+import 'drag_boundary.dart' show DragBoundary;
 import 'velocity_tracker.dart';
 
 export 'dart:ui' show Offset, PointerDeviceKind;
@@ -68,6 +69,7 @@ class DragStartDetails {
     this.globalPosition = Offset.zero,
     Offset? localPosition,
     this.kind,
+    this.boundaryInfo,
   }) : localPosition = localPosition ?? globalPosition;
 
   /// Recorded timestamp of the source pointer event that triggered the drag
@@ -94,6 +96,13 @@ class DragStartDetails {
 
   /// The kind of the device that initiated the event.
   final PointerDeviceKind? kind;
+
+  /// The boundary information for the drag gesture. If no boundary is
+  /// provided, it is null.
+  ///
+  /// See also:
+  /// * [DragBoundary], which defines the boundary for a drag gesture.
+  final DragBoundaryInfo? boundaryInfo;
 
   // TODO(ianh): Expose the current position, so that you can have a no-jump
   // drag even when disambiguating (though of course it would lag the finger
@@ -132,6 +141,7 @@ class DragUpdateDetails {
     this.primaryDelta,
     required this.globalPosition,
     Offset? localPosition,
+    this.boundaryInfo,
   }) : assert(
          primaryDelta == null
            || (primaryDelta == delta.dx && delta.dy == 0.0)
@@ -181,6 +191,13 @@ class DragUpdateDetails {
   ///
   /// Defaults to [globalPosition] if not specified in the constructor.
   final Offset localPosition;
+
+  /// The boundary information for the drag gesture. If no boundary is
+  /// provided, it is null.
+  ///
+  /// See also:
+  /// * [DragBoundary], which defines the boundary for a drag gesture.
+  final DragBoundaryInfo? boundaryInfo;
 
   @override
   String toString() => '${objectRuntimeType(this, 'DragUpdateDetails')}($delta)';
@@ -259,4 +276,27 @@ class DragEndDetails {
 
   @override
   String toString() => '${objectRuntimeType(this, 'DragEndDetails')}($velocity)';
+}
+
+/// Provides boundary information for a drag gesture.
+///
+/// This class holds information about whether a drag gesture is within a specified boundary
+/// and what that boundary is.
+class DragBoundaryInfo {
+  /// Creates a [DragBoundaryInfo] instance with the given [isWithinBoundary] and [boundary].
+  ///
+  /// The [isWithinBoundary] parameter indicates whether the drag gesture is within the boundary.
+  /// The [boundary] parameter specifies the boundary for the drag gesture.
+  DragBoundaryInfo({
+    required this.isWithinBoundary,
+    required this.boundary,
+  });
+
+  /// Indicates whether the drag gesture is within the boundary.
+  final bool isWithinBoundary;
+
+  /// The boundary within which the drag gesture should be contained.
+  ///
+  /// This is an instance of [DragBoundary], which defines the boundary for the drag gesture.
+  final DragBoundary boundary;
 }
