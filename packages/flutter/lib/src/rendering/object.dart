@@ -2000,8 +2000,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
         }
 
         if (!activeLayoutRoot._debugMutationsLocked) {
-          final RenderObject? p = activeLayoutRoot.debugLayoutParent;
-          activeLayoutRoot = p is RenderObject ? p : null;
+          activeLayoutRoot = activeLayoutRoot.debugLayoutParent;
         } else {
           // activeLayoutRoot found.
           break;
@@ -3005,7 +3004,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
         owner!._nodesNeedingPaint.add(this);
         owner!.requestVisualUpdate();
       }
-    } else if (parent is RenderObject) {
+    } else if (parent != null) {
       parent!.markNeedsPaint();
     } else {
       assert(() {
@@ -3021,9 +3020,7 @@ abstract class RenderObject with DiagnosticableTreeMixin implements HitTestTarge
       //
       // Trees rooted at a RenderView do not go through this
       // code path because RenderViews are repaint boundaries.
-      if (owner != null) {
-        owner!.requestVisualUpdate();
-      }
+      owner?.requestVisualUpdate();
     }
   }
 
