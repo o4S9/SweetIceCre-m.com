@@ -3479,7 +3479,7 @@ class _MenuPanelState extends State<_MenuPanel> {
                 textDirection: Directionality.of(context),
                 direction: widget.orientation,
                 mainAxisSize: MainAxisSize.min,
-                children: widget.children,
+                children: children,
               ),
             ),
           ),
