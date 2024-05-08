@@ -52,6 +52,16 @@ import 'theme.dart';
 /// ** See code in examples/api/lib/material/autocomplete/autocomplete.4.dart **
 /// {@end-tool}
 ///
+/// {@tool dartpad}
+/// This example shows how to create an Autocomplete widget whose options are
+/// fetched over the network. It includes displaying a message when the field is
+/// focused for the first time, displaying a loading message while options are
+/// fetched over the network and debounced, and displaying a message if no
+/// options were found.
+///
+/// ** See code in examples/api/lib/material/autocomplete/autocomplete.5.dart **
+/// {@end-tool}
+///
 /// See also:
 ///
 ///  * [RawAutocomplete], which is what Autocomplete is built upon, and which
@@ -68,6 +78,8 @@ class Autocomplete<T extends Object> extends StatelessWidget {
     this.optionsViewBuilder,
     this.optionsViewOpenDirection = OptionsViewOpenDirection.down,
     this.initialValue,
+    this.showOptionsViewOnEmptyOptions = false,
+    this.showOptionsViewOnUncompletedOptions = false,
   });
 
   /// {@macro flutter.widgets.RawAutocomplete.displayStringForOption}
@@ -105,6 +117,23 @@ class Autocomplete<T extends Object> extends StatelessWidget {
   /// {@macro flutter.widgets.RawAutocomplete.initialValue}
   final TextEditingValue? initialValue;
 
+  /// If the options view overlay should be shown when the options returned from
+  /// [optionsBuilder] is empty.
+  ///
+  /// Set to true to display a custom options view on
+  /// first focus or to display a message if no options are found.
+  ///
+  /// If not provided, will only display an options view when
+  /// some options have been returned from [optionsViewBuilder].
+  final bool showOptionsViewOnEmptyOptions;
+
+  /// If the options view overlay should be shown while the [optionsBuilder]
+  /// future waits to be resolved.
+  ///
+  /// Set to true to display a loading message in the options view while waiting
+  /// for options to be fetched over the network.
+  final bool showOptionsViewOnUncompletedOptions;
+
   static Widget _defaultFieldViewBuilder(BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
     return _AutocompleteField(
       focusNode: focusNode,
@@ -131,6 +160,8 @@ class Autocomplete<T extends Object> extends StatelessWidget {
         );
       },
       onSelected: onSelected,
+      showOptionsViewOnEmptyOptions: showOptionsViewOnEmptyOptions,
+      showOptionsViewOnUncompletedOptions: showOptionsViewOnUncompletedOptions,
     );
   }
 }
