@@ -23,7 +23,6 @@ import '../test/test_time_recorder.dart';
 import '../test/test_wrapper.dart';
 import '../test/watcher.dart';
 import '../web/compile.dart';
-import '../web/web_constants.dart';
 
 /// The name of the directory where Integration Tests are placed.
 ///
@@ -234,13 +233,9 @@ class TestCommand extends FlutterCommand with DeviceBasedDevelopmentArtifacts {
               'in seconds (e.g. "60s"), '
               'as a multiplier of the default timeout (e.g. "2x"), '
               'or as the string "none" to disable the timeout entirely.',
-      )
-      ..addFlag(
-        FlutterOptions.kWebWasmFlag,
-        help: 'Compile to WebAssembly rather than JavaScript.\n$kWasmMoreInfo',
-        negatable: false,
       );
 
+    addWasmCompileFlag();
     addDdsOptions(verboseHelp: verboseHelp);
     addServeObservatoryOptions(verboseHelp: verboseHelp);
     usesFatalWarningsOption(verboseHelp: verboseHelp);
